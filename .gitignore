@@ -102,3 +102,9 @@ ENV/
 
 # IDE settings
 .vscode/
+<<<<<<< HEAD
+=======
+
+#gvim files
+*.sw*
+solexs_pipeline/*sw*

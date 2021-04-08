@@ -2,10 +2,10 @@
 # @Author: Abhilash Sarwade
 # @Date:   2020-02-14 14:51:30
 # @email: sarwade@isac.gov.in
-# @File Name: calibration_spectrum_fitting.py
+# @File Name: calibration_fit_routines.py
 # @Project: solexs_pipeline
 
-# @Last Modified time: 2020-02-14 15:32:30
+# @Last Modified time: 2021-04-08 14:43:42
 #####################################################
 
 import numpy as np
@@ -68,6 +68,18 @@ def e_ch(ch,m,c):
     energy = ch*m+c
     return energy
 
+def e_ch_solexs(ch,m,c):
+    ch_512 = []
+    for chi in ch:
+        if chi<=167:
+            ch_512.append(chi)
+        elif chi>167:
+            ch_512.append((chi-167)*2+167)
+
+    ch_512 = np.array(ch_512)
+    energy = ch_512*m+c
+    return energy
+
 def fit_e_ch(ene_peak,ch_peak,ch_peak_err=None):
     if ch_peak_err is None:
         ch_peak_err = [1]*len(ch_peak)
@@ -89,6 +101,19 @@ def fit_e_ch(ene_peak,ch_peak,ch_peak_err=None):
     pfit_leastsq = pfit
     perr_leastsq = np.array(error) 
     return pfit_leastsq, perr_leastsq 
+
+def fit_e_ch_solexs(ene_peak,ch_peak,ch_peak_err=None):
+    ch_512 = []
+    for chi in ch_peak:
+        if chi<=167:
+            ch_512.append(chi)
+        elif chi>167:
+            ch_512.append((chi-167)*2+167)
+
+    ch_peak_512 = np.array(ch_512)
+
+    pfit_leastsq, perr_leastsq = fit_e_ch(ene_peak,ch_peak_512,ch_peak_err)
+    return pfit_leastsq, perr_leastsq
 
 
 def e_fwhm(energy,elec_noise_fwhm,fano_factor):
