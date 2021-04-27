@@ -11,6 +11,18 @@
 import numpy as np
 from scipy import optimize
 
+def read_spectrum_mca(filename):
+    fid = open(filename,'rb')
+    lines = fid.read()
+    fid.close()
+    spec_lines = re.findall(r'<<DATA>>(.*)<<END>>',str(lines))
+    spec_lines = spec_lines[0].split('\\r\\n')[1:-1]
+    spec = []
+    for l in spec_lines:
+        spec.append(int(l))
+    spec = np.array(spec)
+    return spec
+
 def gaussian(x, height, center, width):
     return height*np.exp(-(x - center)**2/(2*width**2)) 
 

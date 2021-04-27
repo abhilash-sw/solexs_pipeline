@@ -12,10 +12,10 @@ solexs\_pipeline.binary\_read module
     :undoc-members:
     :show-inheritance:
 
-solexs\_pipeline.calibration\_spectrum\_fitting module
-------------------------------------------------------
+solexs\_pipeline.calibration\_fit\_routines module
+--------------------------------------------------
 
-.. automodule:: solexs_pipeline.calibration_spectrum_fitting
+.. automodule:: solexs_pipeline.calibration_fit_routines
     :members:
     :undoc-members:
     :show-inheritance:
