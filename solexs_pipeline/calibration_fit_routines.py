@@ -5,7 +5,7 @@
 # @File Name: calibration_fit_routines.py
 # @Project: solexs_pipeline
 
-# @Last Modified time: 2021-04-08 14:43:42
+# @Last Modified time: 2021-11-26 13:56:23
 #####################################################
 
 import numpy as np
@@ -161,7 +161,7 @@ def fit_fe_spectrum(ch,spec): # expects SoLEXS binning and Fe Ka in range of 60 
 
     fe_ka_guess_ch = ch[np.argmax(spec[60:120]) + 60]
     fe_ka_guess_a = np.max(spec[60:120])
-    fit_results,err_fit_results = fit_two_gaussian(ch,spec,guess=[fe_ka_guess_a,fe_ka_guess_ch,3,fe_ka_guess_a*0.2,fe_ka_guess_ch + 15,4],lower=fe_ka_guess_ch - 15,upper=fe_ka_guess_ch +30)
+    fit_results,err_fit_results = fit_two_gaussian(ch,spec,guess=[fe_ka_guess_a,fe_ka_guess_ch,3,fe_ka_guess_a*0.2,fe_ka_guess_ch + 15,4],lower=np.floor(fe_ka_guess_ch*0.9),upper=np.ceil(fe_ka_guess_ch*1.17))
     ch_peak = [fit_results[1],fit_results[4]]
     ch_peak_err = [err_fit_results[1],err_fit_results[1]]
     fit_ene,err_fit_ene =  fit_e_ch(ene_peak,ch_peak,ch_peak_err)
