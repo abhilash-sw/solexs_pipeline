@@ -5,7 +5,7 @@
 # @File Name: calibration_fit_routines.py
 # @Project: solexs_pipeline
 
-# @Last Modified time: 2021-11-30 11:55:29
+# @Last Modified time: 2021-12-13 17:04:55
 #####################################################
 
 import numpy as np
@@ -194,7 +194,7 @@ class fe_spectrum():
 
         fe_ka_guess_ch = ch[np.argmax(spec[60:120]) + 60]
         fe_ka_guess_a = np.max(spec[60:120])
-        fit_results,err_fit_results = fit_two_gaussian(ch,spec,guess=[fe_ka_guess_a,fe_ka_guess_ch,3,fe_ka_guess_a*0.2,fe_ka_guess_ch + 15,4],lower=np.floor(fe_ka_guess_ch*0.9),upper=np.ceil(fe_ka_guess_ch*1.17))
+        fit_results,err_fit_results = fit_two_gaussian(ch,spec,guess=[fe_ka_guess_a,fe_ka_guess_ch,3,fe_ka_guess_a*0.2,fe_ka_guess_ch*1.1,4],lower=np.floor(fe_ka_guess_ch*0.9),upper=np.ceil(fe_ka_guess_ch*1.17))
         ch_peak = [fit_results[1],fit_results[4]]
         ch_peak_err = [err_fit_results[1],err_fit_results[1]]
         fit_ene,err_fit_ene =  fit_e_ch(ene_peak,ch_peak,ch_peak_err)
@@ -203,7 +203,7 @@ class fe_spectrum():
     def fit_spec(self,ch,spec,gain,err_gain=0):
         fe_ka_guess_ch = ch[np.argmax(spec[60:120]) + 60]
         fe_ka_guess_a = np.max(spec[60:120])
-        fit_results,err_fit_results = fit_two_gaussian(ch,spec,guess=[fe_ka_guess_a,fe_ka_guess_ch,3,fe_ka_guess_a*0.2,fe_ka_guess_ch + 15,4],lower=np.floor(fe_ka_guess_ch*0.9),upper=np.ceil(fe_ka_guess_ch*1.17))        
+        fit_results,err_fit_results = fit_two_gaussian(ch,spec,guess=[fe_ka_guess_a,fe_ka_guess_ch,3,fe_ka_guess_a*0.2,fe_ka_guess_ch*1.1,4],lower=np.floor(fe_ka_guess_ch*0.9),upper=np.ceil(fe_ka_guess_ch*1.17))        
 
         fwhm = 2*np.sqrt(2*np.log(2))*fit_results[2]*gain
         err_fwhm = 2*np.sqrt(2*np.log(2))*(gain*err_fit_results[2] + err_gain*fit_results[2])
