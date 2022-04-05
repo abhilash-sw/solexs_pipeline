@@ -5,7 +5,7 @@
 # @File Name: binary_read.py
 # @Project: solexs_pipeline
 
-# @Last Modified time: 2021-04-08 15:46:47
+# @Last Modified time: 2022-04-05 10:58:31
 #####################################################
 
 import os
@@ -87,11 +87,19 @@ class solexs_header():
         self.input_data_subtraction = np.right_shift(np.bitwise_and(hdr_data_arr[:,5],192),4) + np.right_shift(np.bitwise_and(hdr_data_arr[:,6],128),6) + np.right_shift(np.bitwise_and(hdr_data_arr[:,17],128),7)
 
         #gain selection
-        self.gain = np.bitwise_and(hdr_data_arr[:,17],127)
+        gain_b = np.bitwise_and(hdr_data_arr[:,17],127)
+        self.gain = self.decode_gain(gain_b)
 
         ## flare threshold for trigger
         flare_threshold1 = np.bitwise_and(ref_count1[:,0],3)*2**14 + np.bitwise_and(timing_channel_thresh_lower1[:,0],127)*2**7+ np.bitwise_and(timing_channel_thresh_higher1[:,0],127) #*8 for actual number
         self.flare_threshold = flare_threshold1*8
+
+        def decode_gain(self,gain_b):
+            gain = np.ones(len(gain_b))
+            for i in range(7):
+                gain = gain + np.bitwise_and(gain_b,2**i)/2**(2*i+1)
+
+            return gain
 
 
 
