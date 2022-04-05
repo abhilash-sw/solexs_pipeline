@@ -5,11 +5,12 @@
 # @File Name: binary_read.py
 # @Project: solexs_pipeline
 
-# @Last Modified time: 2022-04-05 13:14:52
+# @Last Modified time: 2022-04-05 13:44:48
 #####################################################
 
 import os
 import numpy as np
+import pkg_resources
 # from numba import jit#, prange
 #from . import calibration_spectrum_fitting
 
@@ -19,7 +20,7 @@ TIMING_DATA_SIZE = 60 #bytes
 
 SPACE_PACKET_HEADER_SIZE = 24 #bytes
 
-BCF_DIR='../CALDB/aditya-l1/solexs/data/bcf'
+BCF_DIR=pkg_resources.resource_filename('solexs_pipeline','CALDB/aditya-l1/solexs/data/bcf')
 HK_CONVERSION_FILE_SDD1 = f'{BCF_DIR}/hk/HK_conversion_params_SDD1.txt'
 HK_CONVERSION_FILE_SDD2 = f'{BCF_DIR}/hk/HK_conversion_params_SDD2.txt'
 
@@ -78,20 +79,20 @@ class solexs_header():
         #cooler current
         cooler_current_b = hdr_data_arr[:,14]        
         self.cooler_current = np.zeros(n_data_packets)
-        self.cooler_current[self.det_id==0] = convert_hk(cooler_current_b[self.det_id==0],hk_conv_data1[1,0],hk_conv_data1[1,1])
-        self.cooler_current[self.det_id==1] = convert_hk(cooler_current_b[self.det_id==1],hk_conv_data2[1,0],hk_conv_data2[1,1])        
+        self.cooler_current[self.det_id==0] = self.convert_hk(cooler_current_b[self.det_id==0],hk_conv_data1[1,0],hk_conv_data1[1,1])
+        self.cooler_current[self.det_id==1] = self.convert_hk(cooler_current_b[self.det_id==1],hk_conv_data2[1,0],hk_conv_data2[1,1])        
 
         #back_contact
         back_contact_b = hdr_data_arr[:,15]
         self.back_contact = np.zeros(n_data_packets)
-        self.back_contact[self.det_id==0] = convert_hk(back_contact_b[self.det_id==0],hk_conv_data1[0,0],hk_conv_data1[0,1])
-        self.back_contact[self.det_id==1] = convert_hk(back_contact_b[self.det_id==1],hk_conv_data2[0,0],hk_conv_data2[0,1])
+        self.back_contact[self.det_id==0] = self.convert_hk(back_contact_b[self.det_id==0],hk_conv_data1[0,0],hk_conv_data1[0,1])
+        self.back_contact[self.det_id==1] = self.convert_hk(back_contact_b[self.det_id==1],hk_conv_data2[0,0],hk_conv_data2[0,1])
 
         #sdd temperature
         sdd_temp_b = hdr_data_arr[:,16]
         self.sdd_temp = np.zeros(n_data_packets)
-        self.sdd_temp[self.det_id==0] = convert_hk(sdd_temp_b[self.det_id==0],hk_conv_data1[2,0],hk_conv_data1[2,1])
-        self.sdd_temp[self.det_id==1] = convert_hk(sdd_temp_b[self.det_id==1],hk_conv_data2[2,0],hk_conv_data2[2,1])
+        self.sdd_temp[self.det_id==0] = self.convert_hk(sdd_temp_b[self.det_id==0],hk_conv_data1[2,0],hk_conv_data1[2,1])
+        self.sdd_temp[self.det_id==1] = self.convert_hk(sdd_temp_b[self.det_id==1],hk_conv_data2[2,0],hk_conv_data2[2,1])
 
         #timing_channel_energy_selection_window_threshold_higher
         timing_channel_thresh_higher1 = np.fliplr(hdr_data_arr[:,18:20]).copy()
@@ -109,20 +110,20 @@ class solexs_header():
         flare_threshold1 = np.bitwise_and(ref_count1[:,0],3)*2**14 + np.bitwise_and(timing_channel_thresh_lower1[:,0],127)*2**7+ np.bitwise_and(timing_channel_thresh_higher1[:,0],127) #*8 for actual number
         self.flare_threshold = flare_threshold1*8
 
-        def decode_gain(self,gain_b):
-            gain = np.ones(len(gain_b))
-            for i in range(7):
-                gain = gain + np.bitwise_and(gain_b,2**i)/2**(2*i+1)
+    def decode_gain(self,gain_b):
+        gain = np.ones(len(gain_b))
+        for i in range(7):
+            gain = gain + np.bitwise_and(gain_b,2**i)/2**(2*i+1)
 
-            return gain
+        return gain
 
-        def read_hk_conversion_file(self,HK_CONVERSION_FILE):
-            hk_conv_data = np.loadtxt(HK_CONVERSION_FILE,usecols=[4,5]) # back contact, cooler current, sdd temperature
-            return hk_conv_data
+    def read_hk_conversion_file(self,HK_CONVERSION_FILE):
+        hk_conv_data = np.loadtxt(HK_CONVERSION_FILE,usecols=[4,5]) # back contact, cooler current, sdd temperature
+        return hk_conv_data
 
-        def convert_hk(a0,a1,hk_b):
-            hk_u = hk_b*a0 + a1
-            return hk_u
+    def convert_hk(self,hk_b,a0,a1):
+        hk_u = hk_b*a0 + a1
+        return hk_u
 
 
         # #sixth byte

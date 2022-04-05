@@ -2,6 +2,6 @@
 
 __author__ = """Abhilash Sarwade"""
 __email__ = 'sarwade@ursc.gov.in'
-__version__ = '0.0.42'
+__version__ = '0.0.5'
 
 from .binary_read import read_solexs_binary_data
