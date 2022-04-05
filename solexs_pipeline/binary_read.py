@@ -5,7 +5,7 @@
 # @File Name: binary_read.py
 # @Project: solexs_pipeline
 
-# @Last Modified time: 2022-04-05 10:58:31
+# @Last Modified time: 2022-04-05 13:14:52
 #####################################################
 
 import os
@@ -18,6 +18,10 @@ SPECTRAL_DATA_SIZE = 680 #bytes
 TIMING_DATA_SIZE = 60 #bytes
 
 SPACE_PACKET_HEADER_SIZE = 24 #bytes
+
+BCF_DIR='../CALDB/aditya-l1/solexs/data/bcf'
+HK_CONVERSION_FILE_SDD1 = f'{BCF_DIR}/hk/HK_conversion_params_SDD1.txt'
+HK_CONVERSION_FILE_SDD2 = f'{BCF_DIR}/hk/HK_conversion_params_SDD2.txt'
 
 
 class solexs_header():
@@ -33,6 +37,8 @@ class solexs_header():
 
         assert np.sum(np.diff(self.frame_id) ==  1) == len(self.frame_id)-1, "Frame ID is not continuous"
 
+        hk_conv_data1 = self.read_hk_conversion_file(HK_CONVERSION_FILE_SDD1)
+        hk_conv_data2 = self.read_hk_conversion_file(HK_CONVERSION_FILE_SDD2)
 
         #sixth byte
         self.det_id = np.bitwise_and(hdr_data_arr[:,5],1)
@@ -70,13 +76,22 @@ class solexs_header():
         self.timing_channel_thresh_lower = np.right_shift(np.bitwise_and(timing_channel_thresh_lower1[:,0],65408),7)#*8      #timing_channel_thresh_lower1[:,0]
 
         #cooler current
-        self.cooler_current = hdr_data_arr[:,14]        
+        cooler_current_b = hdr_data_arr[:,14]        
+        self.cooler_current = np.zeros(n_data_packets)
+        self.cooler_current[self.det_id==0] = convert_hk(cooler_current_b[self.det_id==0],hk_conv_data1[1,0],hk_conv_data1[1,1])
+        self.cooler_current[self.det_id==1] = convert_hk(cooler_current_b[self.det_id==1],hk_conv_data2[1,0],hk_conv_data2[1,1])        
 
         #back_contact
-        self.back_contact = hdr_data_arr[:,15]
+        back_contact_b = hdr_data_arr[:,15]
+        self.back_contact = np.zeros(n_data_packets)
+        self.back_contact[self.det_id==0] = convert_hk(back_contact_b[self.det_id==0],hk_conv_data1[0,0],hk_conv_data1[0,1])
+        self.back_contact[self.det_id==1] = convert_hk(back_contact_b[self.det_id==1],hk_conv_data2[0,0],hk_conv_data2[0,1])
 
         #sdd temperature
-        self.sdd_temp = hdr_data_arr[:,16]
+        sdd_temp_b = hdr_data_arr[:,16]
+        self.sdd_temp = np.zeros(n_data_packets)
+        self.sdd_temp[self.det_id==0] = convert_hk(sdd_temp_b[self.det_id==0],hk_conv_data1[2,0],hk_conv_data1[2,1])
+        self.sdd_temp[self.det_id==1] = convert_hk(sdd_temp_b[self.det_id==1],hk_conv_data2[2,0],hk_conv_data2[2,1])
 
         #timing_channel_energy_selection_window_threshold_higher
         timing_channel_thresh_higher1 = np.fliplr(hdr_data_arr[:,18:20]).copy()
@@ -101,6 +116,13 @@ class solexs_header():
 
             return gain
 
+        def read_hk_conversion_file(self,HK_CONVERSION_FILE):
+            hk_conv_data = np.loadtxt(HK_CONVERSION_FILE,usecols=[4,5]) # back contact, cooler current, sdd temperature
+            return hk_conv_data
+
+        def convert_hk(a0,a1,hk_b):
+            hk_u = hk_b*a0 + a1
+            return hk_u
 
 
         # #sixth byte
