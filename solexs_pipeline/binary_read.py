@@ -5,7 +5,7 @@
 # @File Name: binary_read.py
 # @Project: solexs_pipeline
 
-# @Last Modified time: 2022-04-05 13:44:48
+# @Last Modified time: 2022-04-29 14:56:03
 #####################################################
 
 import os
@@ -213,9 +213,22 @@ class solexs_lightcurve():
         med[med<0] = med[med<0] + 2**16
         low[low<0] = low[low<0] + 2**16
 
+        high = self.remove_spurious_counts(high)
+        med = self.remove_spurious_counts(med)
+        low = self.remove_spurious_counts(low)
+
         self.high = high
         self.med = med
         self.low = low
+
+    def remove_spurious_counts(self,count_rate):# count_rate - [high, med, low]
+        SPURIOUS_THRESHOLD = 3e4
+        ids = np.where(count_rate>SPURIOUS_THRESHOLD)
+        ids = ids[0]
+        new_count_rate = count_rate
+        for ii in ids:
+            new_count_rate[ii] = np.median(count_rate[ii-5:ii+5])
+        return new_count_rate
 
 
 class SDD_data_structure():
