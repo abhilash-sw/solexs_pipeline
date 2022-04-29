@@ -5,7 +5,7 @@
 # @File Name: binary_read.py
 # @Project: solexs_pipeline
 
-# @Last Modified time: 2022-04-29 14:56:03
+# @Last Modified time: 2022-04-29 15:11:32
 #####################################################
 
 import os
@@ -221,6 +221,10 @@ class solexs_lightcurve():
         self.med = med
         self.low = low
 
+        self.high_sec = self.reshape_to_per_sec(high)
+        self.med_sec = self.reshape_to_per_sec(med)
+        self.low_sec = self.reshape_to_per_sec(low)
+
     def remove_spurious_counts(self,count_rate):# count_rate - [high, med, low]
         SPURIOUS_THRESHOLD = 3e4
         ids = np.where(count_rate>SPURIOUS_THRESHOLD)
@@ -228,6 +232,10 @@ class solexs_lightcurve():
         new_count_rate = count_rate
         for ii in ids:
             new_count_rate[ii] = np.median(count_rate[ii-5:ii+5])
+        return new_count_rate
+
+    def reshape_to_per_sec(self,count_rate):# count_rate - [high, med, low]
+        new_count_rate = count_rate.reshape(int(len(count_rate)/10),10).sum(axis=1)
         return new_count_rate
 
 
