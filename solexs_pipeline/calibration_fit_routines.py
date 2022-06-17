@@ -5,7 +5,7 @@
 # @File Name: calibration_fit_routines.py
 # @Project: solexs_pipeline
 
-# @Last Modified time: 2022-06-16 17:02:48
+# @Last Modified time: 2022-06-17 08:28:09
 #####################################################
 
 import numpy as np
@@ -270,7 +270,7 @@ class fe_ti_spectrum():
         return fwhm_fe_ka, err_fwhm_fe_ka, fwhm_fe_kb, err_fwhm_fe_kb, fwhm_ti_ka, err_fwhm_ti_ka, fitted_spectrum
 
 
-class amtek_gun_spectrum():
+class amptek_gun_spectrum():
     def __init__(self,ch,spec):
         self.ch = ch
         self.spec = spec
@@ -294,7 +294,7 @@ class amtek_gun_spectrum():
         ids_max = argrelextrema(spec[20:],np.greater)[0]+20
         spec_max = spec[ids_max]
 
-        tmp_ids = np.flip(np.argsort(spec_max))
+        tmp_ids = np.flip(np.argsort(spec_max),axis=0)
         spec_max = spec_max[tmp_ids]
         ids_max = ids_max[tmp_ids]
 
@@ -311,7 +311,8 @@ class amtek_gun_spectrum():
 
         fit_results_cr, err_fit_results_cr = fit_two_gaussian(ch,spec,guess=[fe_ka_guess_a*0.2,ids_max[4],2,fe_ka_guess_a*0.01,ids_max[4]*1.09,2],lower=np.floor(ids_max[4]*0.93),upper=np.ceil(ids_max[4]*1.13))
 
-        fit_results_ca, err_fit_results_ca = fit_two_gaussian(ch,spec,guess=[fe_ka_guess_a*0.2,ids_max[1],2,fe_ka_guess_a*0.04,ids_max[1]*1.09,2],lower=np.floor(ids_max[1]*0.93),upper=np.ceil(ids_max[1]*1.13))
+        ca_ka_guess_ch = (3691 - tmp_fit_ene[1])/tmp_fit_ene[0]
+        fit_results_ca, err_fit_results_ca = fit_two_gaussian(ch,spec,guess=[fe_ka_guess_a*0.2,ca_ka_guess_ch,2,fe_ka_guess_a*0.04,ca_ka_guess_ch*1.09,2],lower=np.floor(ca_ka_guess_ch*0.93),upper=np.ceil(ca_ka_guess_ch*1.13))
 
 
 
@@ -326,12 +327,14 @@ class amtek_gun_spectrum():
         ids_max = argrelextrema(spec[20:],np.greater)[0]+20
         spec_max = spec[ids_max]
 
-        tmp_ids = np.flip(np.argsort(spec_max))
+        tmp_ids = np.flip(np.argsort(spec_max),axis=0)
         spec_max = spec_max[tmp_ids]
         ids_max = ids_max[tmp_ids]
 
         tmp_ch_peak = ids_max[:4]
-
+        
+        tmp_ene_peak = [6403,3691,2622,7057]
+        tmp_fit_ene,tmp_err_fit_ene =  fit_e_ch(tmp_ene_peak,tmp_ch_peak)
 
         fe_ka_guess_ch = ids_max[0]
         fe_ka_guess_a = spec[ids_max[0]]
@@ -342,8 +345,8 @@ class amtek_gun_spectrum():
 
         fit_results_cr, err_fit_results_cr = fit_two_gaussian(ch,spec,guess=[fe_ka_guess_a*0.2,ids_max[4],2,fe_ka_guess_a*0.01,ids_max[4]*1.09,2],lower=np.floor(ids_max[4]*0.93),upper=np.ceil(ids_max[4]*1.13))
 
-        fit_results_ca, err_fit_results_ca = fit_two_gaussian(ch,spec,guess=[fe_ka_guess_a*0.2,ids_max[1],2,fe_ka_guess_a*0.04,ids_max[1]*1.09,2],lower=np.floor(ids_max[1]*0.93),upper=np.ceil(ids_max[1]*1.13))
-
+        ca_ka_guess_ch = (3691 - tmp_fit_ene[1])/tmp_fit_ene[0]
+        fit_results_ca, err_fit_results_ca = fit_two_gaussian(ch,spec,guess=[fe_ka_guess_a*0.2,ca_ka_guess_ch,2,fe_ka_guess_a*0.04,ca_ka_guess_ch*1.09,2],lower=np.floor(ca_ka_guess_ch*0.93),upper=np.ceil(ca_ka_guess_ch*1.13))
 
         fitted_spectrum = two_gaussian(ch,*fit_results_fe) + two_gaussian(ch,*fit_results_ti) + two_gaussian(ch,*fit_results_cr) + two_gaussian(ch,*fit_results_ca)
 
@@ -351,6 +354,5 @@ class amtek_gun_spectrum():
 
 
         return fwhms, fitted_spectrum
-
 
 
