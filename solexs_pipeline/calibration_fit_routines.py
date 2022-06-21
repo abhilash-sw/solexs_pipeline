@@ -5,7 +5,7 @@
 # @File Name: calibration_fit_routines.py
 # @Project: solexs_pipeline
 
-# @Last Modified time: 2022-06-17 08:28:09
+# @Last Modified time: 2022-06-21 16:22:10
 #####################################################
 
 import numpy as np
@@ -226,17 +226,22 @@ class fe_ti_spectrum():
         self.err_offset = err_fit_ene[1]
 
         fwhm_fe_ka, err_fwhm_fe_ka, fwhm_fe_kb, err_fwhm_fe_kb, fwhm_ti_ka, err_fwhm_ti_ka, fitted_spectrum = self.fit_spec(self.ch,self.spec,self.gain,self.err_gain)
-        self.fwhm_fe_ka = fwhm_fe_ka
-        self.err_fwhm_fe_ka = err_fwhm_fe_ka
-        self.fwhm_fe_kb = fwhm_fe_kb
-        self.err_fwhm_fe_kb = err_fwhm_fe_kb
-        self.fwhm_ti_ka = fwhm_ti_ka
-        self.err_fwhm_ti_ka = err_fwhm_ti_ka
+        # self.fwhm_fe_ka = fwhm_fe_ka
+        # self.err_fwhm_fe_ka = err_fwhm_fe_ka
+        # self.fwhm_fe_kb = fwhm_fe_kb
+        # self.err_fwhm_fe_kb = err_fwhm_fe_kb
+        # self.fwhm_ti_ka = fwhm_ti_ka
+        # self.err_fwhm_ti_ka = err_fwhm_ti_ka
+
+        self.fwhms = [fwhm_fe_ka,fwhm_fe_kb,fwhm_ti_ka]
+        self.err_fwhms = [err_fwhm_fe_ka,err_fwhm_fe_kb,err_fwhm_ti_ka]
+
         self.fitted_spectrum = fitted_spectrum
 
 
     def calibrate_e_ch(self,ch,spec):
         ene_peak = [5.89e3,6.49e3,4.51e3]
+        self.ene_peak = ene_peak
 
         fe_ka_guess_ch = ch[np.argmax(spec[60:150]) + 60]
         fe_ka_guess_a = np.max(spec[60:150])
@@ -270,7 +275,7 @@ class fe_ti_spectrum():
         return fwhm_fe_ka, err_fwhm_fe_ka, fwhm_fe_kb, err_fwhm_fe_kb, fwhm_ti_ka, err_fwhm_ti_ka, fitted_spectrum
 
 
-class amptek_gun_spectrum():
+class jsc_spectrum():
     def __init__(self,ch,spec):
         self.ch = ch
         self.spec = spec
@@ -281,8 +286,9 @@ class amptek_gun_spectrum():
         self.err_gain = err_fit_ene[0]
         self.err_offset = err_fit_ene[1]
 
-        fwhms, fitted_spectrum = self.fit_spec(self.ch,self.spec,self.gain,self.err_gain)
+        fwhms, err_fwhms, fitted_spectrum = self.fit_spec(self.ch,self.spec,self.gain,self.err_gain)
         self.fwhms = fwhms
+        self.err_fwhms = err_fwhms
         self.fitted_spectrum = fitted_spectrum
 
 
@@ -351,8 +357,8 @@ class amptek_gun_spectrum():
         fitted_spectrum = two_gaussian(ch,*fit_results_fe) + two_gaussian(ch,*fit_results_ti) + two_gaussian(ch,*fit_results_cr) + two_gaussian(ch,*fit_results_ca)
 
         fwhms = np.array([fit_results_fe[2],fit_results_fe[5],fit_results_ti[2],fit_results_ti[5],fit_results_cr[2],fit_results_cr[5],fit_results_ca[2],fit_results_ca[5]])*2*np.sqrt(2*np.log(2))*gain
+        err_fwhms = 2*np.sqrt(2*np.log(2))*(gain*np.array([err_fit_results_fe[2],err_fit_results_fe[5],err_fit_results_ti[2],err_fit_results_ti[5],err_fit_results_cr[2],err_fit_results_cr[5],err_fit_results_ca[2],err_fit_results_ca[5]])) + err_gain*fwhms
 
-
-        return fwhms, fitted_spectrum
+        return fwhms, err_fwhms, fitted_spectrum
 
 
