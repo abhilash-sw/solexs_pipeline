@@ -5,12 +5,13 @@
 # @File Name: calibration_fit_routines.py
 # @Project: solexs_pipeline
 
-# @Last Modified time: 2022-06-21 16:22:10
+# @Last Modified time: 2022-09-14 09:35:33
 #####################################################
 
 import numpy as np
 from scipy import optimize
 from scipy.signal import argrelextrema
+from scipy.signal import savgol_filter
 
 def read_spectrum_mca(filename):
     fid = open(filename,'rb')
@@ -361,4 +362,161 @@ class jsc_spectrum():
 
         return fwhms, err_fwhms, fitted_spectrum
 
+
+class mu_sdd2_spectrum():
+    def __init__(self,ch,spec,pb_guess_ch,ni_guess_ch,fe_guess_ch,pb_2_guess_ch,zr_guess_ch):
+        self.ch = ch
+        self.spec = spec
+
+        fit_ene, err_fit_ene = self.calibrate_e_ch(self.ch,self.spec,pb_guess_ch,ni_guess_ch,fe_guess_ch,pb_2_guess_ch,zr_guess_ch)
+        self.gain = fit_ene[0]
+        self.offset = fit_ene[1]
+        self.err_gain = err_fit_ene[0]
+        self.err_offset = err_fit_ene[1]
+
+        fwhms, err_fwhms, fitted_spectrum = self.fit_spec(self.ch,self.spec,self.gain,self.err_gain,pb_guess_ch,ni_guess_ch,fe_guess_ch,pb_2_guess_ch,zr_guess_ch)
+        self.fwhms = fwhms
+        self.err_fwhms = err_fwhms
+        self.fitted_spectrum = fitted_spectrum
+
+
+    def calibrate_e_ch(self,ch,spec,pb_guess_ch,ni_guess_ch,fe_guess_ch,pb_2_guess_ch,zr_guess_ch):
+        # tmp_ene_peak = [12613,15775,10551,6403,7478]#[6403,3691,2622,7057]
+        ene_peak = [6403,7478,10551,12613,15775]#[6403,7057,4510,4931,5414,5946,3691,4012]
+        self.ene_peak = ene_peak
+
+        ids_max1 = argrelextrema(savgol_filter(spec,5,1)[180:270],np.greater)[0]+180
+        ids_max2 = argrelextrema(savgol_filter(spec,3,1)[100:170],np.greater)[0]+100
+
+
+        spec_max = spec[ids_max1]
+
+        tmp_ids = np.flip(np.argsort(spec_max),axis=0)
+        spec_max = spec_max[tmp_ids]
+        ids_max1 = ids_max1[tmp_ids]
+
+
+        spec_max = spec[ids_max2]
+
+        tmp_ids = np.flip(np.argsort(spec_max),axis=0)
+        spec_max = spec_max[tmp_ids]
+        ids_max2 = ids_max2[tmp_ids]
+
+        # tmp_ch_peak = np.array([ids_max[1],ids_max[2],ids_max[3],ids_max[4],ids_max[7]])
+
+        # tmp_fit_ene,tmp_err_fit_ene =  fit_e_ch_solexs(tmp_ene_peak,tmp_ch_peak)
+
+        # pb_guess_ch = ids_max1[2]#ids_max[3]
+        pb_guess_a = spec[pb_guess_ch]
+
+        # ni_guess_ch = ids_max2[1]#ids_max[7]
+        ni_guess_a = spec[ni_guess_ch]
+
+        # fe_guess_ch = ids_max2[0]#ids_max[4]
+        fe_guess_a = spec[fe_guess_ch]
+
+        fit_results_pb,err_fit_results_pb = fit_gaussian(ch,spec,guess=[pb_guess_a,pb_guess_ch,1],lower=np.floor(pb_guess_ch*0.985),upper=np.ceil(pb_guess_ch*1.015))
+
+        fit_results_ni,err_fit_results_ni = fit_gaussian(ch,spec,guess=[ni_guess_a,ni_guess_ch,1],lower=np.floor(ni_guess_ch*0.98),upper=np.ceil(ni_guess_ch*1.015))
+
+        fit_results_fe,err_fit_results_fe = fit_gaussian(ch,spec,guess=[fe_guess_a,fe_guess_ch,1],lower=np.floor(fe_guess_ch*0.98),upper=np.ceil(fe_guess_ch*1.02))
+
+        fit_st_line = np.polyfit(np.arange(np.ceil(ids_max1[1]*1.03),int(pb_guess_ch*1.45)),np.log10(spec)[int(np.ceil(ids_max1[1]*1.03)):int(pb_guess_ch*1.45)],1)
+        
+        pow_spec = np.zeros(len(spec))#
+        pow_spec[int(pb_guess_ch*1.108*1.03):int(pb_guess_ch*1.45)] = 10**fit_st_line[1]*10**(np.arange(int(pb_guess_ch*1.108*1.03),int(pb_guess_ch*1.45))*fit_st_line[0])
+
+        # pb_2_guess_ch = ids_max1[0]
+        pb_2_guess_a = spec[pb_2_guess_ch]
+
+        fit_results_pb_2,err_fit_results_pb_2 = fit_gaussian(ch,spec-pow_spec,guess=[pb_2_guess_a,pb_2_guess_ch,1],lower=np.floor(pb_2_guess_ch*0.995),upper=np.ceil(pb_2_guess_ch*1.01))
+
+
+        # zr_guess_ch = ids_max1[1]
+        zr_guess_a = spec[zr_guess_ch]
+
+        fit_results_zr,err_fit_results_zr = fit_gaussian(ch,spec-pow_spec,guess=[zr_guess_a,zr_guess_ch,1],lower=zr_guess_ch-2,upper=zr_guess_ch+1)
+
+
+
+        ch_peak = [fit_results_fe[1],fit_results_ni[1],fit_results_pb[1],fit_results_pb_2[1],fit_results_zr[1]]
+        ch_peak_err = [err_fit_results_fe[1],err_fit_results_ni[1],err_fit_results_pb[1],err_fit_results_pb_2[1],err_fit_results_zr[1]]
+        
+
+        fit_ene,err_fit_ene =  fit_e_ch_solexs(ene_peak,ch_peak,ch_peak_err)
+        return fit_ene, err_fit_ene
+
+    def fit_spec(self,ch,spec,gain,err_gain,pb_guess_ch,ni_guess_ch,fe_guess_ch,pb_2_guess_ch,zr_guess_ch):
+        tmp_ene_peak = [12613,15775,10551,6403,7478]#[6403,3691,2622,7057]
+        ene_peak = [6403,7478,10551,12613,15775]#[6403,7057,4510,4931,5414,5946,3691,4012]
+
+        ids_max1 = argrelextrema(savgol_filter(spec,7,1)[200:],np.greater)[0]+200
+        ids_max2 = argrelextrema(savgol_filter(spec,3,1)[100:200],np.greater)[0]+100
+
+
+        spec_max = spec[ids_max1]
+
+        ids_max1 = argrelextrema(savgol_filter(spec,5,1)[180:270],np.greater)[0]+180
+        ids_max2 = argrelextrema(savgol_filter(spec,3,1)[100:170],np.greater)[0]+100
+
+
+        spec_max = spec[ids_max1]
+
+        tmp_ids = np.flip(np.argsort(spec_max),axis=0)
+        spec_max = spec_max[tmp_ids]
+        ids_max1 = ids_max1[tmp_ids]
+
+
+        spec_max = spec[ids_max2]
+
+        tmp_ids = np.flip(np.argsort(spec_max),axis=0)
+        spec_max = spec_max[tmp_ids]
+        ids_max2 = ids_max2[tmp_ids]
+
+        # tmp_ch_peak = np.array([ids_max[1],ids_max[2],ids_max[3],ids_max[4],ids_max[7]])
+
+        # tmp_fit_ene,tmp_err_fit_ene =  fit_e_ch_solexs(tmp_ene_peak,tmp_ch_peak)
+
+        # pb_guess_ch = ids_max1[2]#ids_max[3]
+        pb_guess_a = spec[pb_guess_ch]
+
+        # ni_guess_ch = ids_max2[1]#ids_max[7]
+        ni_guess_a = spec[ni_guess_ch]
+
+        # fe_guess_ch = ids_max2[0]#ids_max[4]
+        fe_guess_a = spec[fe_guess_ch]
+
+        fit_results_pb,err_fit_results_pb = fit_gaussian(ch,spec,guess=[pb_guess_a,pb_guess_ch,1],lower=np.floor(pb_guess_ch*0.985),upper=np.ceil(pb_guess_ch*1.015))
+
+        fit_results_ni,err_fit_results_ni = fit_gaussian(ch,spec,guess=[ni_guess_a,ni_guess_ch,1],lower=np.floor(ni_guess_ch*0.98),upper=np.ceil(ni_guess_ch*1.015))
+
+        fit_results_fe,err_fit_results_fe = fit_gaussian(ch,spec,guess=[fe_guess_a,fe_guess_ch,1],lower=np.floor(fe_guess_ch*0.98),upper=np.ceil(fe_guess_ch*1.02))
+
+        fit_st_line = np.polyfit(np.arange(np.ceil(ids_max1[1]*1.03),int(pb_guess_ch*1.45)),np.log10(spec)[int(np.ceil(ids_max1[1]*1.03)):int(pb_guess_ch*1.45)],1)
+        
+        pow_spec = np.zeros(len(spec))#
+        pow_spec[int(pb_guess_ch*1.108*1.03):int(pb_guess_ch*1.45)] = 10**fit_st_line[1]*10**(np.arange(int(pb_guess_ch*1.108*1.03),int(pb_guess_ch*1.45))*fit_st_line[0])
+
+        # pb_2_guess_ch = ids_max1[0]
+        pb_2_guess_a = spec[pb_2_guess_ch]
+
+        fit_results_pb_2,err_fit_results_pb_2 = fit_gaussian(ch,spec-pow_spec,guess=[pb_2_guess_a,pb_2_guess_ch,1],lower=np.floor(pb_2_guess_ch*0.995),upper=np.ceil(pb_2_guess_ch*1.01))
+
+
+        # zr_guess_ch = ids_max1[1]
+        zr_guess_a = spec[zr_guess_ch]
+
+        fit_results_zr,err_fit_results_zr = fit_gaussian(ch,spec-pow_spec,guess=[zr_guess_a,zr_guess_ch,1],lower=zr_guess_ch-2,upper=zr_guess_ch+1)
+
+        ch_peak = [fit_results_fe[1],fit_results_ni[1],fit_results_pb[1],fit_results_pb_2[1],fit_results_zr[1]]
+
+        fitted_spectrum = gaussian(ch,*fit_results_fe) + gaussian(ch,*fit_results_ni) + gaussian(ch,*fit_results_pb) + gaussian(ch,*fit_results_pb_2) + gaussian(ch,*fit_results_zr) + pow_spec
+
+        gain_arr = np.ones(len(ch_peak))*gain
+        gain_arr[np.array(ch_peak)>167] = gain*2
+
+        fwhms = np.array([fit_results_fe[2],fit_results_ni[2],fit_results_pb[2],fit_results_pb_2[2],fit_results_zr[2]])*2*np.sqrt(2*np.log(2))*gain_arr
+        err_fwhms = 2*np.sqrt(2*np.log(2))*(gain_arr*np.array([err_fit_results_fe[2],err_fit_results_ni[2],err_fit_results_pb[2],err_fit_results_pb_2[2],err_fit_results_zr[2]])) + err_gain*fwhms
+
+        return fwhms, err_fwhms, fitted_spectrum
 
