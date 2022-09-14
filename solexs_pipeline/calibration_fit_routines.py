@@ -5,7 +5,7 @@
 # @File Name: calibration_fit_routines.py
 # @Project: solexs_pipeline
 
-# @Last Modified time: 2022-09-14 09:35:33
+# @Last Modified time: 2022-09-14 11:12:07
 #####################################################
 
 import numpy as np
@@ -433,7 +433,7 @@ class mu_sdd2_spectrum():
 
 
         # zr_guess_ch = ids_max1[1]
-        zr_guess_a = spec[zr_guess_ch]
+        zr_guess_a = spec[zr_guess_ch] - pow_spec[zr_guess_ch]
 
         fit_results_zr,err_fit_results_zr = fit_gaussian(ch,spec-pow_spec,guess=[zr_guess_a,zr_guess_ch,1],lower=zr_guess_ch-2,upper=zr_guess_ch+1)
 
