@@ -5,7 +5,7 @@
 # @File Name: calibration_fit_routines.py
 # @Project: solexs_pipeline
 
-# @Last Modified time: 2022-09-14 11:12:07
+# @Last Modified time: 2022-09-14 11:50:11
 #####################################################
 
 import numpy as np
@@ -421,7 +421,7 @@ class mu_sdd2_spectrum():
 
         fit_results_fe,err_fit_results_fe = fit_gaussian(ch,spec,guess=[fe_guess_a,fe_guess_ch,1],lower=np.floor(fe_guess_ch*0.98),upper=np.ceil(fe_guess_ch*1.02))
 
-        fit_st_line = np.polyfit(np.arange(np.ceil(ids_max1[1]*1.03),int(pb_guess_ch*1.45)),np.log10(spec)[int(np.ceil(ids_max1[1]*1.03)):int(pb_guess_ch*1.45)],1)
+        fit_st_line = np.polyfit(np.arange(np.ceil(pb_2_guess_ch*1.03),int(zr_guess_ch*1.09)),np.log10(spec)[int(np.ceil(pb_2_guess_ch*1.03)):int(zr_guess_ch*1.09)],1)
         
         pow_spec = np.zeros(len(spec))#
         pow_spec[int(pb_guess_ch*1.108*1.03):int(pb_guess_ch*1.45)] = 10**fit_st_line[1]*10**(np.arange(int(pb_guess_ch*1.108*1.03),int(pb_guess_ch*1.45))*fit_st_line[0])
