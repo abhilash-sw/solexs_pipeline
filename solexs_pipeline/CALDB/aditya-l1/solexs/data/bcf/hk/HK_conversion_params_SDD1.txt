@@ -1,4 +1,4 @@
 #Parameter	ID	Unit	A0	A1
-Back Contact	back_contact	Volt	1.2	0
+Back Contact	back_contact	Volt	1.2	0 # wrong by 2 bits (it is correct 20230428)
 Cooler Current	cooler_current	mA	5.332	0	
 SDD Temperature	sdd_temp	Celcius	-1.2936	174.693
