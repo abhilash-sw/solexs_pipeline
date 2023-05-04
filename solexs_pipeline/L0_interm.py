@@ -5,13 +5,14 @@
 # @File Name: L0_interm.py
 # @Project: solexs_pipeline
 #
-# @Last Modified time: 2023-05-03 05:49:23
+# @Last Modified time: 2023-05-04 04:10:43
 #####################################################
 
 from .binary_read import read_solexs_binary_data
 import os
 from .logging import setup_logger
 import importlib.util
+import numpy as np
 
 ## Importing solexs_caldbgen
 caldbgen_fl = 'CALDB/aditya-l1/solexs/software/solexs_caldbgen/solexs_caldbgen/__init__.py'
@@ -32,7 +33,7 @@ PACQ files to
 """
 
 log = setup_logger(f'solexs_pipeline.{__name__}')
-
+BCF_DIR = 'CALDB/aditya-l1/solexs/data/bcf'
 
 def make_interm_dir(input_filename,output_dir=None,clobber=True):
     if output_dir is None:
@@ -51,4 +52,31 @@ def make_interm_dir(input_filename,output_dir=None,clobber=True):
 4. Add caldb for calculating gain and offset as function of SDD temperature and electronics box temperature
 """
 
-def calc_energy_bins(sdd_temp,ele_box_temp,SDD_number):
+def load_bcf_caldb(SDD_number):
+    SDD_no = str(SDD_number)
+    GAIN_FILE = f'{BCF_DIR}/gain/gain_SDD{SDD_no}.txt'
+    # THICKNESS_FILE = f'{BCF_DIR}/arf/material_thickness.dat'
+    # AREA_FILE = f'{BCF_DIR}/aperture_size/SDD{SDD_no}'
+    ELE_SIGMA_FILE = f'{BCF_DIR}/electronic_noise/electronic_noise.txt'
+    FANO_FILE = f'{BCF_DIR}/electronic_noise/fano.txt'
+    OFFSET_FILE = f'{BCF_DIR}/offset/offset_SDD{SDD_no}.txt'
+
+
+    gain_data = np.loadtxt(GAIN_FILE,usecols=[1,2])
+    offset_data = np.loadtxt(OFFSET_FILE)
+
+    gain = gain_data[0,0]
+    # offset = gain_data[1,0]
+
+    # thickness = np.loadtxt(THICKNESS_FILE,usecols=[1,2])
+
+    # area = np.loadtxt(AREA_FILE)
+
+    electronic_sigma_data = np.loadtxt(ELE_SIGMA_FILE)*1#0.050 #0.15212#0.050 #keV
+    electronic_sigma = electronic_sigma_data[0]
+    fano = np.loadtxt(FANO_FILE)*1#0.114
+
+    return gain, offset_data, electronic_sigma, fano
+
+
+def calc_energy_bins(solexs_bd,ele_box_temp,SDD_number):
