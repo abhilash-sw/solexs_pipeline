@@ -1,1 +1,2 @@
-0.114 #Si
+#Same for both SDDs. Derived for SDD1 from CAL1 data.
+0.15    #0.114 #Si

@@ -1,2 +1,3 @@
+#Same for both SDDs. Derived for SDD1 from CAL1 data.
 #sigma (keV)	Error
-0.05	0.01
+0.038545 9.48e-3
