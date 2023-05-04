@@ -1,0 +1,4 @@
+#SDD1 Offset based on electronics box temperature
+#Offset = a*T^2+b*T+c (keV)
+#a  b   c
+6e-5    1.018e-2    2.448e-1
