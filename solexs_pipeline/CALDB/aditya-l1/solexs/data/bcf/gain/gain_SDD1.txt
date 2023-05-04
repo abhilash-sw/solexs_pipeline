@@ -1,0 +1,4 @@
+#For SDD1: derived from Thermovacuum (CAL1 data)
+#Parameter	Mean (keV)	Error (keV) 
+Gain	0.08068	0.25e-3
+Offset	0	0.04
