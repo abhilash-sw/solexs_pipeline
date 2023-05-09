@@ -5,7 +5,7 @@
 # @File Name: fits_utils.py
 # @Project: solexs_pipeline
 
-# @Last Modified time: 2023-04-28 11:56:23
+# @Last Modified time: 2023-05-09 05:14:53
 #####################################################
 
 from builtins import str
@@ -17,6 +17,7 @@ import astropy.units as u
 import six
 from typing import Any, Dict, List, Optional, Union
 from .logging import setup_logger
+import datetime
 
 _NUMPY_TO_FITS_CODE = {
     # Integers
@@ -818,6 +819,211 @@ class PHAII(FITSFile):
             ("FILENAME",  ''            , 'Name of file'),
             ("CONTENT" , 'Type II PHA file' , 'File content'),
             ("DATE"    ,  ''            , 'Creation Date'),
+        )
+
+        primary_header = self._hdu_list[0].header
+
+        for k in _PRIMARY_HEADER_KEYWORDS:
+            primary_header.append(k)
+
+        self._hdu_list[0].header = primary_header
+
+
+
+class SPECTRUM_INTERM(FITSExtension):
+
+    _HEADER_KEYWORDS = (
+        ("EXTNAME", "SPECTRUM", "Extension name"),
+        ("CONTENT", "OGIP PHA data", "File content"),
+        ("HDUCLASS", "OGIP    ", "format conforms to OGIP standard"),
+        ("HDUVERS", "1.1.0   ", "Version of format (OGIP memo CAL/GEN/92-002a)"),
+        (
+            "HDUDOC",
+            "OGIP memos CAL/GEN/92-002 & 92-002a",
+            "Documents describing the forma",
+        ),
+        ("HDUVERS1", "1.0.0   ", "Obsolete - included for backwards compatibility"),
+        ("HDUVERS2", "1.1.0   ", "Obsolete - included for backwards compatibility"),
+        ("HDUCLAS1", "SPECTRUM", "Extension contains spectral data  "),
+        ("HDUCLAS2", "TOTAL ", ""),
+        ("HDUCLAS3", "COUNTS ", ""),
+        ("HDUCLAS4", "TYPE:II ", ""),
+        ("FILTER", "", "Filter used"),
+        ("CHANTYPE", "PHA", "Channel type"),
+        ("POISSERR", False, "Are the rates Poisson distributed"),
+        ("DETCHANS", None, "Number of channels"),
+        ("CORRSCAL", 1.0, ""),
+        ("AREASCAL", 1.0, ""),
+    )
+
+    def __init__(
+        self,
+        tstart,
+        telapse,
+        channel,
+        counts,
+        quality,
+        exposure,
+        e_min,
+        e_max,
+        back_file=None,
+        sys_err=None,
+        stat_err=None,
+        is_poisson=False,
+    ):
+ 
+
+        n_spectra = len(tstart)
+
+        data_list = [
+            ("TSTART", tstart),
+            ("TELAPSE", telapse),
+            ("SPEC_NUM", np.arange(1, n_spectra + 1, dtype=np.int16)),
+            ("CHANNEL", channel),
+            ("COUNTS", counts),
+            ("QUALITY", quality),
+            ("EXPOSURE", exposure),
+            ("E_MIN", e_min),
+            ("E_MAX", e_max),
+        ]
+
+        if back_file is not None:
+
+            data_list.append(("BACKFILE", back_file))
+
+        if stat_err is not None:
+
+            if is_poisson:
+
+                log.error(
+                    "Tying to enter STAT_ERR error but have POISSERR set true")
+
+                raise RuntimeError()
+            data_list.append(("STAT_ERR", stat_err))
+
+        if sys_err is not None:
+
+            data_list.append(("SYS_ERR", sys_err))
+
+        super(SPECTRUM, self).__init__(tuple(data_list), self._HEADER_KEYWORDS)
+
+        self.hdu.header.set("POISSERR", is_poisson)
+
+class PHAII_INTERM(FITSFile):
+    def __init__(
+        self,
+        filename: str,
+        tstart: np.ndarray,
+        telapse: np.ndarray,
+        channel: np.ndarray,
+        counts: np.ndarray,
+        quality: np.ndarray,
+        exposure: np.ndarray,
+        e_min: np.ndarray,
+        e_max: np.ndarray,
+        back_file: Optional[np.ndarray] = None,
+        sys_err: Optional[np.ndarray] = None,
+        stat_err: Optional[np.ndarray] = None,
+        is_poisson: bool = False,
+    ):
+        """
+
+        A generic PHAII fits file
+
+        :param instrument_name: name of the instrument
+        :param telescope_name: name of the telescope
+        :param tstart: array of interval start times
+        :param telapse: array of times elapsed since start
+        :param channel: arrary of channel numbers
+        :param counts: array of counts
+        :param quality: array of OGIP quality values
+        :param grouping: array of OGIP grouping values
+        :param exposure: array of exposures
+        :param backscale: array of backscale values
+        :param respfile: array of associated response file names
+        :param ancrfile: array of associate ancillary file names
+        :param back_file: array of associated background file names
+        :param sys_err: array of optional systematic errors
+        :param stat_err: array of optional statistical errors (required of non poisson!)
+        """
+
+        # collect the data so that we can have a general
+        # extension builder
+
+        self._filename = filename
+        self._tstart = _atleast_1d_with_dtype(tstart, np.float32) * u.s
+        self._telapse = _atleast_1d_with_dtype(telapse, np.float32) * u.s
+        self._channel = _atleast_2d_with_dtype(channel, np.int16)
+        self._counts = _atleast_2d_with_dtype(counts, np.float32) #* 1.0 / u.s
+        self._exposure = _atleast_1d_with_dtype(exposure, np.float32) * u.s
+        self._quality = _atleast_2d_with_dtype(quality, np.int16)
+        self._e_min = _atleast_2d_with_dtype(e_min, np.float32) * u.keV
+        self._e_max = _atleast_2d_with_dtype(e_max, np.float32) * u.keV
+
+        if sys_err is not None:
+
+            self._sys_err = _atleast_2d_with_dtype(sys_err, np.float32)
+
+        else:
+
+            self._sys_err = sys_err
+
+        if stat_err is not None:
+
+            self._stat_err = _atleast_2d_with_dtype(stat_err, np.float32)
+
+        else:
+
+            self._stat_err = stat_err
+
+        if back_file is not None:
+
+            self._back_file = _atleast_1d_with_dtype(back_file, str)
+        else:
+
+            self._back_file = np.array(["NONE"] * self._tstart.shape[0])
+
+        # Create the SPECTRUM extension
+
+        spectrum_extension = SPECTRUM_INTERM(
+            self._tstart,
+            self._telapse,
+            self._channel,
+            self._counts,
+            self._quality,
+            self._exposure,
+            self._e_min,
+            self._e_max,
+            back_file=self._back_file,
+            sys_err=self._sys_err,
+            stat_err=self._stat_err,
+            is_poisson=is_poisson,
+        )
+
+        # Set telescope and instrument name
+
+        spectrum_extension.hdu.header.set("TELESCOP", 'AL1')
+        spectrum_extension.hdu.header.set("INSTRUME", 'SoLEXS')
+        spectrum_extension.hdu.header.set("DETCHANS", len(self._channel[0]))
+
+        super(PHAII_INTERM, self).__init__(fits_extensions=[spectrum_extension])
+
+        self.primary_header_update()
+
+    @property
+    def instrument(self):
+        return
+
+    def primary_header_update(self):
+        _PRIMARY_HEADER_KEYWORDS = (
+            ("MISSION" , 'ADITYA L-1', 'Name of mission/satellite'),
+            ("TELESCOP", 'AL1' , 'Name of mission/satellite'),
+            ("INSTRUME", 'SoLEXS'      , 'Name of Instrument/detector'),
+            ("ORIGIN"  , 'SoLEXSPOC'       , 'Source of FITS file'),
+            ("CREATOR" , 'solexs_pipeline '  , 'Creator of file'),
+            ("FILENAME",  self._filename            , 'Name of file'),
+            ("CONTENT" , 'Type II PHA file' , 'File content'),
+            ("DATE"    ,  datetime.datetime.now().strftime("%Y-%m-%d") , 'Creation Date'),
         )
 
         primary_header = self._hdu_list[0].header
