@@ -5,7 +5,7 @@
 # @File Name: L0_interm.py
 # @Project: solexs_pipeline
 #
-# @Last Modified time: 2023-05-09 02:35:46
+# @Last Modified time: 2023-05-09 06:02:40
 #####################################################
 
 from .binary_read import read_solexs_binary_data
@@ -59,6 +59,9 @@ class intermediate_directory():
 
         self.energy_bins_mat_SDD1 = self.calc_energy_bins(SDD_number=1)
         self.energy_bins_mat_SDD2 = self.calc_energy_bins(SDD_number=2)
+
+        self.st_time_SDD1 = self.get_start_time(SDD_number=1)
+        self.st_time_SDD2 = self.get_start_time(SDD_number=2)
     
     def make_interm_dir(self,input_filename,output_dir=None,clobber=True):
         if output_dir is None:
@@ -113,3 +116,16 @@ class intermediate_directory():
                 gain_f[i], offset_f[i])
         
         return energy_bins_mat
+    
+    def get_start_time(self,SDD_number):
+        """
+        Output: In seconds from standard epoch
+
+        Use TCT file to get UT in seconds
+        Temporary: using instrument time
+        """
+        
+        sdd_data = getattr(self.solexs_bd,f'SDD{SDD_number}')
+        st_time = sdd_data.hdr_data.ref_count/1000 #in seconds
+
+        return st_time
