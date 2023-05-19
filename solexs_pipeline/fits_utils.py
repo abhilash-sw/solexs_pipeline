@@ -5,7 +5,7 @@
 # @File Name: fits_utils.py
 # @Project: solexs_pipeline
 
-# @Last Modified time: 2023-05-09 05:14:53
+# @Last Modified time: 2023-05-11 09:58:49
 #####################################################
 
 from builtins import str
@@ -905,7 +905,7 @@ class SPECTRUM_INTERM(FITSExtension):
 
             data_list.append(("SYS_ERR", sys_err))
 
-        super(SPECTRUM, self).__init__(tuple(data_list), self._HEADER_KEYWORDS)
+        super(SPECTRUM_INTERM, self).__init__(tuple(data_list), self._HEADER_KEYWORDS)
 
         self.hdu.header.set("POISSERR", is_poisson)
 
