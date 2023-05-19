@@ -5,7 +5,7 @@
 # @File Name: L0_interm.py
 # @Project: solexs_pipeline
 #
-# @Last Modified time: 2023-05-09 06:02:40
+# @Last Modified time: 2023-05-11 10:04:23
 #####################################################
 
 from .binary_read import read_solexs_binary_data
@@ -13,9 +13,11 @@ import os
 from .logging import setup_logger
 import importlib.util
 import numpy as np
+from .fits_utils import PHAII_INTERM
 
 ## Importing solexs_caldbgen
-caldbgen_fl = 'CALDB/aditya-l1/solexs/software/solexs_caldbgen/solexs_caldbgen/__init__.py'
+curr_dir = os.path.dirname(__file__)
+caldbgen_fl = f'{curr_dir}/CALDB/aditya-l1/solexs/software/solexs_caldbgen/solexs_caldbgen/__init__.py'
 caldbgen_ml_name = 'solexs_caldbgen'
 caldbgen_spec = importlib.util.spec_from_file_location(caldbgen_ml_name,caldbgen_fl)
 solexs_caldbgen = importlib.util.module_from_spec(caldbgen_spec)
@@ -33,7 +35,7 @@ PACQ files to
 """
 
 log = setup_logger(f'solexs_pipeline.{__name__}')
-BCF_DIR = 'CALDB/aditya-l1/solexs/data/bcf'
+BCF_DIR = f'{curr_dir}/CALDB/aditya-l1/solexs/data/bcf'
 
 
 
@@ -50,22 +52,22 @@ class intermediate_directory():
     # input_file: Path to solexs binary data file
     def __init__(self, input_file, output_dir=None, clobber=True) -> None:
         self.input_file = input_file
-        input_filename = os.path.basename(input_file)
-        self.make_interm_dir(input_filename,output_dir,clobber)
+        self.input_filename = os.path.basename(input_file)
+        #self.make_interm_dir(self.input_filename,output_dir,clobber)
 
         self.solexs_bd = read_solexs_binary_data(input_file)
         self.n_SDD1 = len(self.solexs_bd.SDD1.hdr_data.gain)
         self.n_SDD2 = len(self.solexs_bd.SDD2.hdr_data.gain)
 
-        self.energy_bins_mat_SDD1 = self.calc_energy_bins(SDD_number=1)
-        self.energy_bins_mat_SDD2 = self.calc_energy_bins(SDD_number=2)
+        self.read_lbt_hk_data()
 
-        self.st_time_SDD1 = self.get_start_time(SDD_number=1)
-        self.st_time_SDD2 = self.get_start_time(SDD_number=2)
+        #self.pha_file_SDD1 = self.pha_interm_file(1)
+        #self.pha_file_SDD2 = self.pha_interm_file(2)
+
     
     def make_interm_dir(self,input_filename,output_dir=None,clobber=True):
         if output_dir is None:
-            output_dir = os.path.curdir()
+            output_dir = os.path.curdir
         
         output_dir = os.path.join(output_dir,input_filename) #TODO remove extention from inputfilename if required
         if os.path.exists(output_dir) and clobber: #TODO add log
@@ -113,7 +115,7 @@ class intermediate_directory():
 
         for i in range(getattr(self, f'n_SDD{SDD_number}')):
             energy_bins_mat[i, :, :] = solexs_caldbgen.calc_ene_bins_out(
-                gain_f[i], offset_f[i])
+                gain_f[i], offset_f[i])[0]
         
         return energy_bins_mat
     
@@ -129,3 +131,24 @@ class intermediate_directory():
         st_time = sdd_data.hdr_data.ref_count/1000 #in seconds
 
         return st_time
+    
+    def pha_interm_file(self,SDD_number):
+        sdd_data = getattr(self.solexs_bd,f'SDD{SDD_number}')
+        st_time = self.get_start_time(SDD_number=SDD_number)
+        
+        n_SDD = getattr(self,f'n_SDD{SDD_number}')
+        ch = np.arange(340)
+        channel = np.tile(ch,(n_SDD,1)).T
+        telapse = np.ones(n_SDD) #assuming integration time is 1 second each
+        counts = sdd_data.spectral_data.spectra
+        quality = np.zeros(n_SDD)
+        exposure = np.ones(n_SDD)
+        energy_bin_mat = self.calc_energy_bins(SDD_number=SDD_number)
+        e_min = energy_bin_mat[:,:,0]
+        e_max = energy_bin_mat[:,:,1]
+        
+        pha_file = PHAII_INTERM(f'{self.input_filename}_SDD{SDD_number}',st_time,telapse,channel,counts,quality,exposure,e_min,e_max)
+        
+        return pha_file
+        
+
