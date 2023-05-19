@@ -5,7 +5,7 @@
 # @File Name: logging.py
 # @Project: solexs_pipeline
 #
-# @Last Modified time: 2023-04-28 11:55:57
+# @Last Modified time: 2023-05-11 09:22:45
 #####################################################
 
 import logging
@@ -15,7 +15,7 @@ import sys
 
 #3ML.io.logging
 
-def setup_logger(name,log_filename):
+def setup_logger(name,log_filename=None):
 
     # A logger with name name will be created
     # and then add it to the print stream
