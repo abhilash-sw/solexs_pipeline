@@ -5,7 +5,7 @@
 # @File Name: L0_interm.py
 # @Project: solexs_pipeline
 #
-# @Last Modified time: 2023-06-06 10:26:39
+# @Last Modified time: 2023-06-06 10:52:26
 #####################################################
 
 from .binary_read import read_solexs_binary_data
@@ -139,9 +139,9 @@ class intermediate_directory():
         
         n_SDD = getattr(self,f'n_SDD{SDD_number}')
         ch = np.arange(340)
-        channel = np.tile(ch,(n_SDD,1)).T
+        channel = np.tile(ch,(n_SDD,1))
         telapse = np.ones(n_SDD) #assuming integration time is 1 second each
-        counts = sdd_data.spectral_data.spectra
+        counts = sdd_data.spectral_data.spectra.T
         quality = np.zeros(n_SDD)
         exposure = np.ones(n_SDD)
         energy_bin_mat = self.calc_energy_bins(SDD_number=SDD_number)
