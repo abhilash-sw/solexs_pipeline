@@ -5,7 +5,7 @@
 # @File Name: L0_interm.py
 # @Project: solexs_pipeline
 #
-# @Last Modified time: 2023-06-06 10:59:00
+# @Last Modified time: 2023-06-06 03:33:28
 #####################################################
 
 from .binary_read import read_solexs_binary_data
@@ -13,7 +13,7 @@ import os
 from .logging import setup_logger
 import importlib.util
 import numpy as np
-from .fits_utils import PHAII_INTERM
+from .fits_utils import PHAII_INTERM, HOUSEKEEPING
 
 ## Importing solexs_caldbgen
 curr_dir = os.path.dirname(__file__)
@@ -151,5 +151,25 @@ class intermediate_directory():
         pha_file = PHAII_INTERM(f'{self.input_filename}_SDD{SDD_number}',st_time,telapse,channel,counts,quality,exposure,e_min,e_max)
         
         return pha_file
-        
+    
+    def hk_interm_file(self,SDD_number):
+        sdd_data = getattr(self.solexs_bd, f'SDD{SDD_number}')
+        hk_dict = sdd_data.hdr_data.__dict__
+        hk_colnames = []
+        hk_arr = []
 
+        for colname in hk_dict.keys():
+            hk_colnames.append(colname)
+            hk_arr.append(hk_dict[colname])
+        
+        hk_arr = np.array(hk_arr)
+        hk_colnames = np.array(hk_colnames)
+
+        # Add LBT HK Data 
+        ele_box_temp_tmp = getattr(self,f'ele_box_temp_SDD{SDD_number}')
+        hk_arr = np.vstack((hk_arr,ele_box_temp_tmp))
+        hk_colnames = np.append(hk_colnames,'Electronic Box Temperature')
+
+        hk_file = HOUSEKEEPING(f'{self.input_filename}_SDD{SDD_number}',hk_arr,hk_colnames)
+
+        return hk_file

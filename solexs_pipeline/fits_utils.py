@@ -5,7 +5,7 @@
 # @File Name: fits_utils.py
 # @Project: solexs_pipeline
 
-# @Last Modified time: 2023-05-11 09:58:49
+# @Last Modified time: 2023-06-06 11:43:06
 #####################################################
 
 from builtins import str
@@ -222,7 +222,7 @@ class FITSExtension(object):
         # update the header to indicate that the file was created by 3ML
         self._hdu.header.set(
             "CREATOR",
-            "solexs_caldbgen",
+            "solexs_pipeline",
             "(Abhilash Sarwade, sarwade@ursc.gov.in)",
         )
 
@@ -1023,6 +1023,82 @@ class PHAII_INTERM(FITSFile):
             ("CREATOR" , 'solexs_pipeline '  , 'Creator of file'),
             ("FILENAME",  self._filename            , 'Name of file'),
             ("CONTENT" , 'Type II PHA file' , 'File content'),
+            ("DATE"    ,  datetime.datetime.now().strftime("%Y-%m-%d") , 'Creation Date'),
+        )
+
+        primary_header = self._hdu_list[0].header
+
+        for k in _PRIMARY_HEADER_KEYWORDS:
+            primary_header.append(k)
+
+        self._hdu_list[0].header = primary_header
+
+
+# From Rwitika        
+class HK(FITSExtension):
+
+    _HEADER_KEYWORDS = (
+        ("EXTNAME", "HK", "Extension name"),
+        ("HDUCLASS", "OGIP    ", "format conforms to OGIP standard"),
+        ("HDUCLAS1", "HK    ", "Extension contains housekeeping parameters"),
+        ("HDUCLAS2", "PKT    ", "Each row corresponds to info of a data 'packet'"),
+        ("HDUVERS", "1.1.0   ", "Version of format (OGIP memo CAL/GEN/92-002a)"),
+        (
+            "HDUDOC",
+            "OGIP memos 93-003 & 94-003",
+            "Documents describing the format",
+        ),
+        ("HDUVERS1", "1.0.0   ", "Obsolete - included for backwards compatibility"),
+        ("HDUVERS2", "1.1.0   ", "Obsolete - included for backwards compatibility"),
+    )
+
+    def __init__(self, hk_arr, hk_colnames):
+        """
+        Represents the HK extension of a housekeeping FITS file
+        
+        """
+        
+        hkdata_list = []
+        for name in hk_colnames:
+            hkdata_list.append((name.upper(), hk_arr[name]))
+        
+        data_tuple = tuple(hkdata_list)
+
+        super(HK, self).__init__(data_tuple, self._HEADER_KEYWORDS)
+
+class HOUSEKEEPING(FITSFile):
+    """
+    HK parameters corresponding to each data packet of a particular raw (binary) file.
+
+    """
+
+    def __init__(
+        self,
+        filename,
+        hk_arr,
+        hk_colnames
+    ):
+
+        # Make sure that the provided iterables are of the right type for the FITS format
+        ## ADD this!!!
+
+        # Create EVENTS extension
+        hk_ext = HK(hk_arr, hk_colnames)
+
+        self._filename = filename
+
+        # Create FITS file
+        super(HOUSEKEEPING, self).__init__(fits_extensions=[hk_ext])
+
+    def primary_header_update(self):
+        _PRIMARY_HEADER_KEYWORDS = (
+            ("MISSION" , 'ADITYA L-1', 'Name of mission/satellite'),
+            ("TELESCOP", 'AL1' , 'Name of mission/satellite'),
+            ("INSTRUME", 'SoLEXS'      , 'Name of Instrument/detector'),
+            ("ORIGIN"  , 'SoLEXSPOC'       , 'Source of FITS file'),
+            ("CREATOR" , 'solexs_pipeline '  , 'Creator of file'),
+            ("FILENAME",  self._filename            , 'Name of file'),
+            ("CONTENT" , 'Housekeeping Data file' , 'File content'),
             ("DATE"    ,  datetime.datetime.now().strftime("%Y-%m-%d") , 'Creation Date'),
         )
 
