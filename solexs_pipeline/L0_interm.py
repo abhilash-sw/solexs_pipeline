@@ -5,7 +5,7 @@
 # @File Name: L0_interm.py
 # @Project: solexs_pipeline
 #
-# @Last Modified time: 2023-06-06 10:52:26
+# @Last Modified time: 2023-06-06 10:59:00
 #####################################################
 
 from .binary_read import read_solexs_binary_data
@@ -107,7 +107,7 @@ class intermediate_directory():
     def calc_energy_bins(self,SDD_number):
         gain, offset_data, electronic_sigma, fano = self.load_bcf_caldb(SDD_number=SDD_number)
         sdd_data = getattr(self.solexs_bd,f'SDD{SDD_number}')
-        gain_f = gain*sdd_data.hdr_data.gain
+        gain_f = gain/sdd_data.hdr_data.gain
         ele_box_temp_tmp = getattr(self,f'ele_box_temp_SDD{SDD_number}')
         offset_f = offset_data[0]*ele_box_temp_tmp**2 + \
             offset_data[1]*ele_box_temp_tmp + offset_data[2]
