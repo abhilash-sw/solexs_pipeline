@@ -5,7 +5,7 @@
 # @File Name: binary_read.py
 # @Project: solexs_pipeline
 
-# @Last Modified time: 2022-04-29 15:11:32
+# @Last Modified time: 2023-06-28 09:11:54
 #####################################################
 
 import os
@@ -19,6 +19,7 @@ SPECTRAL_DATA_SIZE = 680 #bytes
 TIMING_DATA_SIZE = 60 #bytes
 
 SPACE_PACKET_HEADER_SIZE = 24 #bytes
+PLD_PACKET_HEADER_SIZE = 72 #bytes
 
 BCF_DIR=pkg_resources.resource_filename('solexs_pipeline','CALDB/aditya-l1/solexs/data/bcf')
 HK_CONVERSION_FILE_SDD1 = f'{BCF_DIR}/hk/HK_conversion_params_SDD1.txt'
@@ -288,11 +289,13 @@ class space_packet_header():
         self.session_id = session_id1[:,0]
 
 
-
+class pld_packet_header():
+    def __init__(self) -> None:
+        pass
 
 class read_solexs_binary_data():
     """
-    Read SoLEXS binary data and segregate header, spectral and timing data. Data Types can be "Raw", "SP" (Space Packet)
+    Read SoLEXS binary data and segregate header, spectral and timing data. Data Types can be "Raw", "SP" (Space Packet), "PLD"
     Output: SDD data structure
     """
 
@@ -349,8 +352,32 @@ class read_solexs_binary_data():
             self.SDD1 = SDD_data_structure(data_sdd1)
             self.SDD2 = SDD_data_structure(data_sdd2)
 
-            self.SP_header = space_packet_header(space_packet_header_data)            
+            self.SP_header = space_packet_header(space_packet_header_data)
 
+        if self.data_type == 'PLD':
+
+            self.packet_size = PLD_PACKET_HEADER_SIZE + HDR_SIZE + SPACE_PACKET_HEADER_SIZE + TIMING_DATA_SIZE
+            file_size = os.path.getsize(input_filename)
+            self.n_data_packets = int(np.floor(os.path.getsize(input_filename)/self.packet_size))
+
+            if np.mod(file_size, self.packet_size) == 0:
+                self.left_over_data_flag = 0
+            else:
+                self.left_over_data_flag = 1
+
+            data_full = self.read_file()
+
+            pld_packet_header_data = data_full[:, :PLD_PACKET_HEADER_SIZE]
+            data_full = data_full[:, PLD_PACKET_HEADER_SIZE:]
+
+            det_id = np.bitwise_and(data_full[:, 5], 1)
+            data_sdd1 = data_full[det_id == 0, :]
+            data_sdd2 = data_full[det_id == 1, :]
+
+            self.SDD1 = SDD_data_structure(data_sdd1)
+            self.SDD2 = SDD_data_structure(data_sdd2)
+
+            # self.PLD_header = pld_packet_header(pld_packet_header_data)
 
     def read_file(self):
         # fid = open(self.filename,'rb')
