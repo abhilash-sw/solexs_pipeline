@@ -5,22 +5,24 @@
 # @File Name: L0_interm.py
 # @Project: solexs_pipeline
 #
-# @Last Modified time: 2023-06-06 03:33:28
+# @Last Modified time: 2023-07-27 07:52:52
 #####################################################
 
 from .binary_read import read_solexs_binary_data
 import os
 from .logging import setup_logger
 import importlib.util
+import sys
 import numpy as np
 from .fits_utils import PHAII_INTERM, HOUSEKEEPING
 
 ## Importing solexs_caldbgen
 curr_dir = os.path.dirname(__file__)
-caldbgen_fl = f'{curr_dir}/CALDB/aditya-l1/solexs/software/solexs_caldbgen/solexs_caldbgen/__init__.py'
+caldbgen_fl = f'{curr_dir}/CALDB/aditya-l1/solexs/software/solexs_caldbgen/solexs_caldbgen/__init__.py' #TODO pkg_resources.
 caldbgen_ml_name = 'solexs_caldbgen'
 caldbgen_spec = importlib.util.spec_from_file_location(caldbgen_ml_name,caldbgen_fl)
 solexs_caldbgen = importlib.util.module_from_spec(caldbgen_spec)
+sys.modules[caldbgen_ml_name] = solexs_caldbgen
 caldbgen_spec.loader.exec_module(solexs_caldbgen)
 
 
