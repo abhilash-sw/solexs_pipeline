@@ -5,7 +5,7 @@
 # @File Name: fits_utils.py
 # @Project: solexs_pipeline
 
-# @Last Modified time: 2023-06-06 06:36:18
+# @Last Modified time: 2023-07-27 08:56:30
 #####################################################
 
 from builtins import str
@@ -29,6 +29,9 @@ _NUMPY_TO_FITS_CODE = {
     # Floating point
     np.float32: "E",
     np.float64: "D",
+    np.bool_: "L",  # https://docs.astropy.org/en/stable/io/fits/usage/table.html
+    np.uint8: "B",
+    np.uintc: "I",
 }
 
 log = setup_logger(f'solexs_pipeline.{__name__}')
