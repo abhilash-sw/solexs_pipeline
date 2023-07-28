@@ -5,7 +5,7 @@
 # @File Name: fits_utils.py
 # @Project: solexs_pipeline
 
-# @Last Modified time: 2023-07-27 08:56:30
+# @Last Modified time: 2023-07-28 10:08:48
 #####################################################
 
 from builtins import str
@@ -1136,7 +1136,10 @@ class RATE_INTERM(FITSExtension):
     def __init__(
         self,
         tm,
-        counts,
+        counts_low,
+        counts_med,
+        counts_high,
+        counts_all
         # countrs_error=False,
     ):
  
@@ -1144,7 +1147,10 @@ class RATE_INTERM(FITSExtension):
 
         data_list = [
             ("TIME", tm),
-            ("COUNTS", counts),
+            ("COUNTS_LOW", counts_low),
+            ("COUNTS_MED", counts_med),
+            ("COUNTS_HIGH", counts_high),
+            ("COUNTS_ALL", counts_all),
             # ("E_MAX", e_max),
         ]
 
@@ -1197,7 +1203,10 @@ class LC_INTERM(FITSFile):
         self,
         filename: str,
         tm: np.ndarray,
-        counts: np.ndarray,
+        counts_low: np.ndarray,
+        counts_med: np.ndarray,
+        counts_high: np.ndarray,
+        counts_all: np.ndarray,
         minchan: np.ndarray,
         maxchan: np.ndarray,
         is_poisson: bool = False,
@@ -1230,7 +1239,10 @@ class LC_INTERM(FITSFile):
         self._time = _atleast_1d_with_dtype(tm, np.float32) * u.s
         # self._telapse = _atleast_1d_with_dtype(telapse, np.float32) * u.s
         # self._channel = _atleast_2d_with_dtype(channel, np.int16)
-        self._counts = _atleast_2d_with_dtype(counts, np.float32) #* 1.0 / u.s
+        self._counts_low = _atleast_1d_with_dtype(counts_low, np.int32) #* 1.0 / u.s
+        self._counts_med = _atleast_1d_with_dtype(counts_med, np.int32) #* 1.0 / u.s
+        self._counts_high = _atleast_1d_with_dtype(counts_high, np.int32) #* 1.0 / u.s
+        self._counts_all = _atleast_1d_with_dtype(counts_all, np.int32) #* 1.0 / u.s
         # self._exposure = _atleast_1d_with_dtype(exposure, np.float32) * u.s
         # self._quality = _atleast_2d_with_dtype(quality, np.int16)
         # self._e_min = _atleast_2d_with_dtype(e_min, np.float32) * u.keV
@@ -1243,7 +1255,10 @@ class LC_INTERM(FITSFile):
 
         rate_extension = RATE_INTERM(
             self._time,
-            self._counts,
+            self._counts_low,
+            self._counts_med,
+            self._counts_high,
+            self._counts_all,
         )
 
         eneband_extension = ENEBAND_INTERM(self._minchan,self._maxchan)
@@ -1251,7 +1266,7 @@ class LC_INTERM(FITSFile):
 
         rate_extension.hdu.header.set("TELESCOP", 'AL1')
         rate_extension.hdu.header.set("INSTRUME", 'SoLEXS')
-        rate_extension.hdu.header.set("NUMBAND", len(self._counts[0]))
+        rate_extension.hdu.header.set("NUMBAND", '3')
 
         super(LC_INTERM, self).__init__(fits_extensions=[eneband_extension,rate_extension])
 
