@@ -5,7 +5,7 @@
 # @File Name: L0_interm.py
 # @Project: solexs_pipeline
 #
-# @Last Modified time: 2023-07-27 08:57:01
+# @Last Modified time: 2023-07-28 09:58:59
 #####################################################
 
 from .binary_read import read_solexs_binary_data
@@ -14,7 +14,7 @@ from .logging import setup_logger
 import importlib.util
 import sys
 import numpy as np
-from .fits_utils import PHAII_INTERM, HOUSEKEEPING
+from .fits_utils import PHAII_INTERM, HOUSEKEEPING, LC_INTERM
 
 ## Importing solexs_caldbgen
 curr_dir = os.path.dirname(__file__)
@@ -176,3 +176,17 @@ class intermediate_directory():
         hk_file = HOUSEKEEPING(f'{self.input_filename}_SDD{SDD_number}',hk_dict,hk_colnames) #TODO Some problem with data type of ref counter
 
         return hk_file
+    
+    def lc_interm_file(self,SDD_number):
+        sdd_data = getattr(self.solexs_bd,f'SDD{SDD_number}')
+        tm = sdd_data.hdr_data.ref_count
+        rate1 = sdd_data.temporal_data.low_sec
+        rate2 = sdd_data.temporal_data.med_sec
+        rate3 = sdd_data.temporal_data.high_sec
+        rate_all = rate1 + rate2 + rate3
+        # rate = np.vstack((rate1, rate2, rate3, rate_all)).T
+        minchan = sdd_data.hdr_data.timing_channel_thresh_lower
+        maxchan = sdd_data.hdr_data.timing_channel_thresh_higher
+        lc_file = LC_INTERM(f'{self.input_filename}_SDD{SDD_number}',tm,rate1,rate2,rate3,rate_all, minchan, maxchan)
+
+        return lc_file
