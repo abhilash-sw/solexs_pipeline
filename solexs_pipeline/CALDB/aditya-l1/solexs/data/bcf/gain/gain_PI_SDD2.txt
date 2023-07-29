@@ -1,0 +1,4 @@
+#Gain and offset values for PI files assuming digital gain is 1.6875
+#Parameter	Mean (keV)	Error (keV)
+Gain	 0.047645060	0.2e-3
+Offset	0 0.04
