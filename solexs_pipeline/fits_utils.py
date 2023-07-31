@@ -5,7 +5,7 @@
 # @File Name: fits_utils.py
 # @Project: solexs_pipeline
 
-# @Last Modified time: 2023-07-31 06:56:26 am
+# @Last Modified time: 2023-07-31 07:31:37 am
 #####################################################
 
 from builtins import str
@@ -649,11 +649,11 @@ class PHAII(FITSFile):
         channel: np.ndarray,
         counts: np.ndarray,
         quality: np.ndarray,
-        grouping: np.ndarray,
+        # grouping: np.ndarray, # Commenting for time being
         exposure: np.ndarray,
-        backscale: np.ndarray,
+        # backscale: np.ndarray, # Commenting for time being
         respfile: np.ndarray,
-        ancrfile: np.ndarray,
+        # ancrfile: np.ndarray, # Commenting for time being
         back_file: Optional[np.ndarray] = None,
         sys_err: Optional[np.ndarray] = None,
         stat_err: Optional[np.ndarray] = None,
