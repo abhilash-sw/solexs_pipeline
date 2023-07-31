@@ -5,7 +5,7 @@
 # @File Name: fits_utils.py
 # @Project: solexs_pipeline
 
-# @Last Modified time: 2023-07-31 07:31:37 am
+# @Last Modified time: 2023-07-31 07:33:11 am
 #####################################################
 
 from builtins import str
@@ -649,11 +649,11 @@ class PHAII(FITSFile):
         channel: np.ndarray,
         counts: np.ndarray,
         quality: np.ndarray,
-        # grouping: np.ndarray, # Commenting for time being
+        # grouping: np.ndarray, # Commenting for time being (693)
         exposure: np.ndarray,
-        # backscale: np.ndarray, # Commenting for time being
+        # backscale: np.ndarray, # Commenting for time being (695)
         respfile: np.ndarray,
-        # ancrfile: np.ndarray, # Commenting for time being
+        # ancrfile: np.ndarray, # Commenting for time being (697)
         back_file: Optional[np.ndarray] = None,
         sys_err: Optional[np.ndarray] = None,
         stat_err: Optional[np.ndarray] = None,
@@ -690,10 +690,10 @@ class PHAII(FITSFile):
         self._counts = _atleast_2d_with_dtype(counts, np.float32) #* 1.0 / u.s
         self._exposure = _atleast_1d_with_dtype(exposure, np.float32) * u.s
         self._quality = _atleast_2d_with_dtype(quality, np.int16)
-        self._grouping = _atleast_2d_with_dtype(grouping, np.int16)
-        self._backscale = _atleast_1d_with_dtype(backscale, np.float32)
+        # self._grouping = _atleast_2d_with_dtype(grouping, np.int16)
+        # self._backscale = _atleast_1d_with_dtype(backscale, np.float32)
         self._respfile = _atleast_1d_with_dtype(respfile, str)
-        self._ancrfile = _atleast_1d_with_dtype(ancrfile, str)
+        # self._ancrfile = _atleast_1d_with_dtype(ancrfile, str)
 
         if sys_err is not None:
 
