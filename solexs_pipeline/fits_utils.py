@@ -5,7 +5,7 @@
 # @File Name: fits_utils.py
 # @Project: solexs_pipeline
 
-# @Last Modified time: 2023-07-31 02:58:01 pm
+# @Last Modified time: 2023-07-31 03:12:02 pm
 #####################################################
 
 from builtins import str
@@ -1188,8 +1188,8 @@ class ENEBAND_INTERM(FITSExtension):
 
 
         data_list = [
-            ("MINCHAN", minchan),
-            ("MAXCHAN", maxchan),
+            ("LOWER_THRESH", minchan),
+            ("HIGHER_THRESH", maxchan),
             # ("E_MAX", e_max),
         ]
 
@@ -1432,8 +1432,8 @@ class LC(FITSFile):
         # self._quality = _atleast_2d_with_dtype(quality, np.int16)
         # self._e_min = _atleast_2d_with_dtype(e_min, np.float32) * u.keV
         # self._e_max = _atleast_2d_with_dtype(e_max, np.float32) * u.keV
-        self._minchan = _atleast_1d_with_dtype(minchan, np.int16)
-        self._maxchan = _atleast_1d_with_dtype(maxchan, np.int16)
+        self._minchan = _atleast_2d_with_dtype(minchan, np.int16)
+        self._maxchan = _atleast_2d_with_dtype(maxchan, np.int16)
 
         # Create the RATE extension
 

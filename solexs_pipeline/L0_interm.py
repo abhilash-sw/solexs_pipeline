@@ -5,7 +5,7 @@
 # @File Name: L0_interm.py
 # @Project: solexs_pipeline
 #
-# @Last Modified time: 2023-07-31 07:37:23 am
+# @Last Modified time: 2023-07-31 03:11:35 pm
 #####################################################
 
 from .binary_read import read_solexs_binary_data
@@ -185,8 +185,8 @@ class intermediate_directory():
         rate3 = sdd_data.temporal_data.high_sec
         rate_all = rate1 + rate2 + rate3
         # rate = np.vstack((rate1, rate2, rate3, rate_all)).T
-        minchan = sdd_data.hdr_data.timing_channel_thresh_lower
-        maxchan = sdd_data.hdr_data.timing_channel_thresh_higher
-        lc_file = LC_INTERM(f'{self.input_filename}_SDD{SDD_number}',tm,rate1,rate2,rate3,rate_all, minchan, maxchan)
+        lower_thresh = sdd_data.hdr_data.timing_channel_thresh_lower
+        higher_thresh = sdd_data.hdr_data.timing_channel_thresh_higher
+        lc_file = LC_INTERM(f'{self.input_filename}_SDD{SDD_number}',tm,rate1,rate2,rate3,rate_all, lower_thresh, higher_thresh)
 
         return lc_file
