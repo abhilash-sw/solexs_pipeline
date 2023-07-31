@@ -5,7 +5,7 @@
 # @File Name: L0_interm.py
 # @Project: solexs_pipeline
 #
-# @Last Modified time: 2023-07-28 09:58:59
+# @Last Modified time: 2023-07-31 07:37:23 am
 #####################################################
 
 from .binary_read import read_solexs_binary_data
@@ -179,7 +179,7 @@ class intermediate_directory():
     
     def lc_interm_file(self,SDD_number):
         sdd_data = getattr(self.solexs_bd,f'SDD{SDD_number}')
-        tm = sdd_data.hdr_data.ref_count
+        tm = sdd_data.hdr_data.ref_count/1000
         rate1 = sdd_data.temporal_data.low_sec
         rate2 = sdd_data.temporal_data.med_sec
         rate3 = sdd_data.temporal_data.high_sec
