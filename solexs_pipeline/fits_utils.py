@@ -5,7 +5,7 @@
 # @File Name: fits_utils.py
 # @Project: solexs_pipeline
 
-# @Last Modified time: 2023-07-31 07:33:11 am
+# @Last Modified time: 2023-07-31 02:45:47 pm
 #####################################################
 
 from builtins import str
@@ -1266,7 +1266,7 @@ class LC_INTERM(FITSFile):
 
         rate_extension.hdu.header.set("TELESCOP", 'AL1')
         rate_extension.hdu.header.set("INSTRUME", 'SoLEXS')
-        rate_extension.hdu.header.set("NUMBAND", '3')
+        rate_extension.hdu.header.set("NUMBAND", '4')
 
         super(LC_INTERM, self).__init__(fits_extensions=[eneband_extension,rate_extension])
 
