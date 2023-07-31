@@ -5,7 +5,7 @@
 # @File Name: fits_utils.py
 # @Project: solexs_pipeline
 
-# @Last Modified time: 2023-07-28 10:08:48
+# @Last Modified time: 2023-07-31 06:56:26 am
 #####################################################
 
 from builtins import str
@@ -226,7 +226,7 @@ class FITSExtension(object):
         self._hdu.header.set(
             "CREATOR",
             "solexs_pipeline",
-            "(Abhilash Sarwade, sarwade@ursc.gov.in)",
+            # "(Abhilash Sarwade, sarwade@ursc.gov.in)",
         )
 
     @property
@@ -643,8 +643,7 @@ class SPECTRUM(FITSExtension):
 class PHAII(FITSFile):
     def __init__(
         self,
-        instrument_name: str,
-        telescope_name: str,
+        filename: str,
         tstart: np.ndarray,
         telapse: np.ndarray,
         channel: np.ndarray,
@@ -684,6 +683,7 @@ class PHAII(FITSFile):
         # collect the data so that we can have a general
         # extension builder
 
+        self._filename = filename
         self._tstart = _atleast_1d_with_dtype(tstart, np.float32) * u.s
         self._telapse = _atleast_1d_with_dtype(telapse, np.float32) * u.s
         self._channel = _atleast_2d_with_dtype(channel, np.int16)
@@ -739,8 +739,8 @@ class PHAII(FITSFile):
 
         # Set telescope and instrument name
 
-        spectrum_extension.hdu.header.set("TELESCOP", telescope_name)
-        spectrum_extension.hdu.header.set("INSTRUME", instrument_name)
+        spectrum_extension.hdu.header.set("TELESCOP", 'AL1')
+        spectrum_extension.hdu.header.set("INSTRUME", 'SoLEXS')
         spectrum_extension.hdu.header.set("DETCHANS", len(self._channel[0]))
 
         super(PHAII, self).__init__(fits_extensions=[spectrum_extension])
@@ -819,9 +819,9 @@ class PHAII(FITSFile):
             ("INSTRUME", 'SoLEXS'      , 'Name of Instrument/detector'),
             ("ORIGIN"  , 'SoLEXSPOC'       , 'Source of FITS file'),
             ("CREATOR" , 'solexs_pipeline '  , 'Creator of file'),
-            ("FILENAME",  ''            , 'Name of file'),
+            ("FILENAME", self._filename            , 'Name of file'),
             ("CONTENT" , 'Type II PHA file' , 'File content'),
-            ("DATE"    ,  ''            , 'Creation Date'),
+            ("DATE", datetime.datetime.now().strftime("%Y-%m-%d"), 'Creation Date'),
         )
 
         primary_header = self._hdu_list[0].header
