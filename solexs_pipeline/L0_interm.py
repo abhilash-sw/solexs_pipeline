@@ -5,7 +5,7 @@
 # @File Name: L0_interm.py
 # @Project: solexs_pipeline
 #
-# @Last Modified time: 2023-07-31 03:11:35 pm
+# @Last Modified time: 2023-08-01 10:47:26 am
 #####################################################
 
 from .binary_read import read_solexs_binary_data
@@ -71,10 +71,15 @@ class intermediate_directory():
         if output_dir is None:
             output_dir = os.path.curdir
         
-        output_dir = os.path.join(output_dir,input_filename) #TODO remove extention from inputfilename if required
+        output_dir = os.path.join(output_dir,f'{input_filename}_interm') #TODO remove extention from inputfilename if required
         if os.path.exists(output_dir) and clobber: #TODO add log
             os.removedirs(output_dir)
         os.makedirs(output_dir)
+        sdd1_output_dir = os.path.join(output_dir,'SDD1')
+        sdd2_output_dir = os.path.join(output_dir,'SDD2')
+
+        os.makedirs(sdd1_output_dir)
+        os.makedirs(sdd2_output_dir)
 
     def load_bcf_caldb(self,SDD_number):
         SDD_no = str(SDD_number)
