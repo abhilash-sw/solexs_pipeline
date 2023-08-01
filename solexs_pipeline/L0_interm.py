@@ -5,7 +5,7 @@
 # @File Name: L0_interm.py
 # @Project: solexs_pipeline
 #
-# @Last Modified time: 2023-08-01 10:47:26 am
+# @Last Modified time: 2023-08-01 11:01:22 am
 #####################################################
 
 from .binary_read import read_solexs_binary_data
@@ -78,6 +78,7 @@ class intermediate_directory():
         sdd1_output_dir = os.path.join(output_dir,'SDD1')
         sdd2_output_dir = os.path.join(output_dir,'SDD2')
 
+        self.output_dir = output_dir
         os.makedirs(sdd1_output_dir)
         os.makedirs(sdd2_output_dir)
 
@@ -195,3 +196,23 @@ class intermediate_directory():
         lc_file = LC_INTERM(f'{self.input_filename}_SDD{SDD_number}',tm,rate1,rate2,rate3,rate_all, lower_thresh, higher_thresh)
 
         return lc_file
+    
+    def create_interm_files(self,SDD_number):
+        pha_interm_file = self.pha_interm_file(SDD_number)
+        lc_interm_file = self.lc_interm_file(SDD_number)
+        hk_interm_file = self.hk_interm_file(SDD_number)
+        
+        return pha_interm_file, lc_interm_file, hk_interm_file
+    
+    def write_interm_files(self,SDD_number):
+        pha_interm_file, lc_interm_file, hk_interm_file = self.create_interm_files(SDD_number)
+        sdd_interm_dir = os.path.join(self.output_dir,f'SDD{SDD_number}')
+        
+        pha_filename = os.path.join(sdd_interm_dir,f'{self.input_filename}_interm_SDD{SDD_number}.pha')
+        pha_interm_file.writeto(pha_filename)
+
+        lc_filename = os.path.join(sdd_interm_dir, f'{self.input_filename}_interm_SDD{SDD_number}.lc')
+        lc_interm_file.writeto(lc_filename)
+
+        hk_filename = os.path.join(sdd_interm_dir, f'{self.input_filename}_interm_SDD{SDD_number}.hk')
+        hk_interm_file.writeto(hk_filename)
