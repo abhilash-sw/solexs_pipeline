@@ -5,7 +5,7 @@
 # @File Name: fits_utils.py
 # @Project: solexs_pipeline
 
-# @Last Modified time: 2023-07-31 03:12:02 pm
+# @Last Modified time: 2023-08-01 11:44:41 am
 #####################################################
 
 from builtins import str
@@ -683,6 +683,10 @@ class PHAII(FITSFile):
         # collect the data so that we can have a general
         # extension builder
 
+        grouping = np.zeros(tstart.shape[0])
+        backscale = np.ones(tstart.shape[0])
+        ancrfile = np.array(["NONE"]*tstart.shape[0])
+
         self._filename = filename
         self._tstart = _atleast_1d_with_dtype(tstart, np.float32) * u.s
         self._telapse = _atleast_1d_with_dtype(telapse, np.float32) * u.s
@@ -690,10 +694,10 @@ class PHAII(FITSFile):
         self._counts = _atleast_2d_with_dtype(counts, np.float32) #* 1.0 / u.s
         self._exposure = _atleast_1d_with_dtype(exposure, np.float32) * u.s
         self._quality = _atleast_2d_with_dtype(quality, np.int16)
-        # self._grouping = _atleast_2d_with_dtype(grouping, np.int16)
-        # self._backscale = _atleast_1d_with_dtype(backscale, np.float32)
+        self._grouping = _atleast_2d_with_dtype(grouping, np.int16)
+        self._backscale = _atleast_1d_with_dtype(backscale, np.float32)
         self._respfile = _atleast_1d_with_dtype(respfile, str)
-        # self._ancrfile = _atleast_1d_with_dtype(ancrfile, str)
+        self._ancrfile = _atleast_1d_with_dtype(ancrfile, str)
 
         if sys_err is not None:
 
