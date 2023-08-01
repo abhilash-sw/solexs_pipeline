@@ -5,7 +5,7 @@
 # @File Name: fits_utils.py
 # @Project: solexs_pipeline
 
-# @Last Modified time: 2023-08-01 11:44:41 am
+# @Last Modified time: 2023-08-01 09:41:01 pm
 #####################################################
 
 from builtins import str
@@ -21,6 +21,7 @@ import datetime
 
 _NUMPY_TO_FITS_CODE = {
     # Integers
+    np.int8: "B",
     np.int16: "I",
     np.int32: "J",
     np.int64: "K",
@@ -574,11 +575,11 @@ class SPECTRUM(FITSExtension):
         channel,
         counts,
         quality,
-        grouping,
+        # grouping,
         exposure,
-        backscale,
+        # backscale,
         respfile,
-        ancrfile,
+        # ancrfile,
         back_file=None,
         sys_err=None,
         stat_err=None,
@@ -607,15 +608,15 @@ class SPECTRUM(FITSExtension):
         data_list = [
             ("TSTART", tstart),
             ("TELAPSE", telapse),
-            ("SPEC_NUM", np.arange(1, n_spectra + 1, dtype=np.int16)),
+            ("SPEC_NUM", np.arange(1, n_spectra + 1, dtype=np.int32)),
             ("CHANNEL", channel),
             ("COUNTS", counts),
             ("QUALITY", quality),
-            ("BACKSCAL", backscale),
-            ("GROUPING", grouping),
+            # ("BACKSCAL", backscale),
+            # ("GROUPING", grouping),
             ("EXPOSURE", exposure),
             ("RESPFILE", respfile),
-            ("ANCRFILE", ancrfile),
+            # ("ANCRFILE", ancrfile),
         ]
 
         if back_file is not None:
@@ -683,21 +684,21 @@ class PHAII(FITSFile):
         # collect the data so that we can have a general
         # extension builder
 
-        grouping = np.zeros(tstart.shape[0])
-        backscale = np.ones(tstart.shape[0])
-        ancrfile = np.array(["NONE"]*tstart.shape[0])
+        # grouping = np.zeros(tstart.shape[0],np.int8)
+        # backscale = np.ones(tstart.shape[0],dtype=np.int8)
+        # ancrfile = np.array(["NONE"]*tstart.shape[0])
 
         self._filename = filename
         self._tstart = _atleast_1d_with_dtype(tstart, np.float32) * u.s
-        self._telapse = _atleast_1d_with_dtype(telapse, np.float32) * u.s
+        self._telapse = _atleast_1d_with_dtype(telapse, np.int8) * u.s
         self._channel = _atleast_2d_with_dtype(channel, np.int16)
         self._counts = _atleast_2d_with_dtype(counts, np.float32) #* 1.0 / u.s
-        self._exposure = _atleast_1d_with_dtype(exposure, np.float32) * u.s
+        self._exposure = _atleast_1d_with_dtype(exposure, np.int8) * u.s
         self._quality = _atleast_2d_with_dtype(quality, np.int16)
-        self._grouping = _atleast_2d_with_dtype(grouping, np.int16)
-        self._backscale = _atleast_1d_with_dtype(backscale, np.float32)
+        # self._grouping = _atleast_2d_with_dtype(grouping, np.int8)
+        # self._backscale = _atleast_1d_with_dtype(backscale, np.int8)
         self._respfile = _atleast_1d_with_dtype(respfile, str)
-        self._ancrfile = _atleast_1d_with_dtype(ancrfile, str)
+        # self._ancrfile = _atleast_1d_with_dtype(ancrfile, str)
 
         if sys_err is not None:
 
@@ -730,11 +731,11 @@ class PHAII(FITSFile):
             self._channel,
             self._counts,
             self._quality,
-            self._grouping,
+            # self._grouping,
             self._exposure,
-            self._backscale,
+            # self._backscale,
             self._respfile,
-            self._ancrfile,
+            # self._ancrfile,
             back_file=self._back_file,
             sys_err=self._sys_err,
             stat_err=self._stat_err,
