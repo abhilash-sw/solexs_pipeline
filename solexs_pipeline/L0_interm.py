@@ -5,7 +5,7 @@
 # @File Name: L0_interm.py
 # @Project: solexs_pipeline
 #
-# @Last Modified time: 2023-08-01 11:01:22 am
+# @Last Modified time: 2023-08-01 11:35:31 am
 #####################################################
 
 from .binary_read import read_solexs_binary_data
@@ -208,11 +208,14 @@ class intermediate_directory():
         pha_interm_file, lc_interm_file, hk_interm_file = self.create_interm_files(SDD_number)
         sdd_interm_dir = os.path.join(self.output_dir,f'SDD{SDD_number}')
         
-        pha_filename = os.path.join(sdd_interm_dir,f'{self.input_filename}_interm_SDD{SDD_number}.pha')
+        pha_filename = os.path.join(
+            sdd_interm_dir, f'{self.input_filename}_SDD{SDD_number}_interm.pha')
         pha_interm_file.writeto(pha_filename)
 
-        lc_filename = os.path.join(sdd_interm_dir, f'{self.input_filename}_interm_SDD{SDD_number}.lc')
+        lc_filename = os.path.join(
+            sdd_interm_dir, f'{self.input_filename}_SDD{SDD_number}_interm.lc')
         lc_interm_file.writeto(lc_filename)
 
-        hk_filename = os.path.join(sdd_interm_dir, f'{self.input_filename}_interm_SDD{SDD_number}.hk')
+        hk_filename = os.path.join(
+            sdd_interm_dir, f'{self.input_filename}_SDD{SDD_number}_interm.hk')
         hk_interm_file.writeto(hk_filename)
