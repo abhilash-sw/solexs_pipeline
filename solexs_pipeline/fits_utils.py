@@ -5,7 +5,7 @@
 # @File Name: fits_utils.py
 # @Project: solexs_pipeline
 
-# @Last Modified time: 2023-08-01 09:41:01 pm
+# @Last Modified time: 2023-08-02 08:00:31 am
 #####################################################
 
 from builtins import str
@@ -689,12 +689,12 @@ class PHAII(FITSFile):
         # ancrfile = np.array(["NONE"]*tstart.shape[0])
 
         self._filename = filename
-        self._tstart = _atleast_1d_with_dtype(tstart, np.float32) * u.s
-        self._telapse = _atleast_1d_with_dtype(telapse, np.int8) * u.s
-        self._channel = _atleast_2d_with_dtype(channel, np.int16)
-        self._counts = _atleast_2d_with_dtype(counts, np.float32) #* 1.0 / u.s
-        self._exposure = _atleast_1d_with_dtype(exposure, np.int8) * u.s
-        self._quality = _atleast_2d_with_dtype(quality, np.int16)
+        self._tstart = tstart*u.s #_atleast_1d_with_dtype(tstart, np.float32) * u.s
+        self._telapse = telapse*u.s #_atleast_1d_with_dtype(telapse, np.int8) * u.s
+        self._channel = channel #_atleast_2d_with_dtype(channel, np.int16)
+        self._counts = counts #_atleast_2d_with_dtype(counts, np.float32) #* 1.0 / u.s
+        self._exposure = exposure*u.s #_atleast_1d_with_dtype(exposure, np.int8) * u.s
+        self._quality = quality #_atleast_2d_with_dtype(quality, np.int16)
         # self._grouping = _atleast_2d_with_dtype(grouping, np.int8)
         # self._backscale = _atleast_1d_with_dtype(backscale, np.int8)
         self._respfile = _atleast_1d_with_dtype(respfile, str)
