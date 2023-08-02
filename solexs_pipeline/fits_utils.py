@@ -5,7 +5,7 @@
 # @File Name: fits_utils.py
 # @Project: solexs_pipeline
 
-# @Last Modified time: 2023-08-02 08:00:31 am
+# @Last Modified time: 2023-08-02 08:21:54 am
 #####################################################
 
 from builtins import str
@@ -958,6 +958,7 @@ class PHAII_INTERM(FITSFile):
         # collect the data so that we can have a general
         # extension builder
 
+        #TODO Remove atleast commands. It may cause memory error
         self._filename = filename
         self._tstart = _atleast_1d_with_dtype(tstart, np.float32) * u.s
         self._telapse = _atleast_1d_with_dtype(telapse, np.float32) * u.s
@@ -1371,8 +1372,8 @@ class ENEBAND(FITSExtension):
         # countrs_error=False,
     ):
         
-        self._minchan = _atleast_2d_with_dtype(minchan,np.int16)
-        self._maxchan = _atleast_2d_with_dtype(maxchan, np.int16)
+        self._minchan = _atleast_1d_with_dtype(minchan,np.int16)
+        self._maxchan = _atleast_1d_with_dtype(maxchan, np.int16)
 
         data_list = [
             ("MINCHAN", self._minchan),
@@ -1426,19 +1427,19 @@ class LC(FITSFile):
         # self._telapse = _atleast_1d_with_dtype(telapse, np.float32) * u.s
         # self._channel = _atleast_2d_with_dtype(channel, np.int16)
         self._counts_low = _atleast_1d_with_dtype(
-            counts_low, np.int32)  # * 1.0 / u.s
+            counts_low, np.float32)  # * 1.0 / u.s
         self._counts_med = _atleast_1d_with_dtype(
-            counts_med, np.int32)  # * 1.0 / u.s
+            counts_med, np.float32)  # * 1.0 / u.s
         self._counts_high = _atleast_1d_with_dtype(
-            counts_high, np.int32)  # * 1.0 / u.s
+            counts_high, np.float32)  # * 1.0 / u.s
         self._counts_all = _atleast_1d_with_dtype(
-            counts_all, np.int32)  # * 1.0 / u.s
+            counts_all, np.float32)  # * 1.0 / u.s
         # self._exposure = _atleast_1d_with_dtype(exposure, np.float32) * u.s
         # self._quality = _atleast_2d_with_dtype(quality, np.int16)
         # self._e_min = _atleast_2d_with_dtype(e_min, np.float32) * u.keV
         # self._e_max = _atleast_2d_with_dtype(e_max, np.float32) * u.keV
-        self._minchan = _atleast_2d_with_dtype(minchan, np.int16)
-        self._maxchan = _atleast_2d_with_dtype(maxchan, np.int16)
+        self._minchan = _atleast_1d_with_dtype(minchan, np.int16)
+        self._maxchan = _atleast_1d_with_dtype(maxchan, np.int16)
 
         # Create the RATE extension
 
