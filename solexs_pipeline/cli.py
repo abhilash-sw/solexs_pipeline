@@ -5,13 +5,14 @@ from .L0_interm import intermediate_directory
 from .interm_L1 import L1_directory
 
 @click.command()
-def main(args=None):
+@click.option('-i','--input_file')
+def main(input_file,args=None):
     """Console script for solexs_pipeline."""
     click.echo("Replace this message by putting your code into "
-               "solexs_pipeline.cli.main")
+               "solexs_pipeline.cli.main11")
     click.echo("See click documentation at https://click.palletsprojects.com/")
 
-    filename = click.argument('filename',type=click.Path(exists=True))
+    filename = input_file#click.option('filename',type=click.Path(exists=True))
 
     # Intermediate Directory
     interm_dir = intermediate_directory(filename)
