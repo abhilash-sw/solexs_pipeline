@@ -5,8 +5,9 @@ from .L0_interm import intermediate_directory
 from .interm_L1 import L1_directory
 
 @click.command()
-@click.option('-i','--input_file')
-def main(input_file,args=None):
+@click.option('-i', '--input_file', help='Input SoLEXS Instrument Data File')
+@click.option('-dt', '--data_type', default='Raw', show_default=True, help='Raw/SP/L0')
+def main(input_file,data_type,args=None):
     """Console script for solexs_pipeline."""
     click.echo("Replace this message by putting your code into "
                "solexs_pipeline.cli.main11")
@@ -15,7 +16,7 @@ def main(input_file,args=None):
     filename = input_file#click.option('filename',type=click.Path(exists=True))
 
     # Intermediate Directory
-    interm_dir = intermediate_directory(filename)
+    interm_dir = intermediate_directory(filename, input_file_data_type=data_type)
     interm_dir.make_interm_dir(filename)
     interm_dir.write_interm_files(SDD_number=1)
     interm_dir.write_interm_files(SDD_number=2)

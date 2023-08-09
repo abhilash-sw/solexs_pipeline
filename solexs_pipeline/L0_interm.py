@@ -5,7 +5,7 @@
 # @File Name: L0_interm.py
 # @Project: solexs_pipeline
 #
-# @Last Modified time: 2023-08-01 11:35:31 am
+# @Last Modified time: 2023-08-09 09:42:14 am
 #####################################################
 
 from .binary_read import read_solexs_binary_data
@@ -52,12 +52,12 @@ BCF_DIR = f'{curr_dir}/CALDB/aditya-l1/solexs/data/bcf'
 
 class intermediate_directory():
     # input_file: Path to solexs binary data file
-    def __init__(self, input_file, output_dir=None, clobber=True) -> None:
+    def __init__(self, input_file, input_file_data_type = 'Raw' ,output_dir=None, clobber=True) -> None:
         self.input_file = input_file
         self.input_filename = os.path.basename(input_file)
         #self.make_interm_dir(self.input_filename,output_dir,clobber)
 
-        self.solexs_bd = read_solexs_binary_data(input_file)
+        self.solexs_bd = read_solexs_binary_data(input_file, data_type=input_file_data_type)
         self.n_SDD1 = len(self.solexs_bd.SDD1.hdr_data.gain)
         self.n_SDD2 = len(self.solexs_bd.SDD2.hdr_data.gain)
 
