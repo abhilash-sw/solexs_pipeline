@@ -5,7 +5,7 @@
 # @File Name: binary_read.py
 # @Project: solexs_pipeline
 
-# @Last Modified time: 2023-06-28 09:17:00
+# @Last Modified time: 2023-08-09 09:40:13 am
 #####################################################
 
 import os
@@ -354,7 +354,7 @@ class read_solexs_binary_data():
 
             self.SP_header = space_packet_header(space_packet_header_data)
 
-        if self.data_type == 'PLD':
+        if self.data_type == 'L0':
 
             self.packet_size = PLD_PACKET_HEADER_SIZE + HDR_SIZE + SPECTRAL_DATA_SIZE + TIMING_DATA_SIZE
             file_size = os.path.getsize(input_filename)
