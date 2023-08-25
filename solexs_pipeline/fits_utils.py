@@ -5,7 +5,7 @@
 # @File Name: fits_utils.py
 # @Project: solexs_pipeline
 
-# @Last Modified time: 2023-08-02 08:21:54 am
+# @Last Modified time: 2023-08-25 06:31:22 pm
 #####################################################
 
 from builtins import str
@@ -18,6 +18,33 @@ import six
 from typing import Any, Dict, List, Optional, Union
 from .logging import setup_logger
 import datetime
+
+# From https://heasarc.gsfc.nasa.gov/docs/software/fitsio/c/c_user/node20.html
+# Codes for the data type of binary table columns and/or for the
+# data type of variables when reading or writing keywords or data:
+#                               DATATYPE               TFORM CODE
+#   #define TBIT          1  /*                            'X' */
+#   #define TBYTE        11  /* 8-bit unsigned byte,       'B' */
+#   #define TLOGICAL     14  /* logicals (int for keywords     */
+#                            /*  and char for table cols   'L' */
+#   #define TSTRING      16  /* ASCII string,              'A' */
+#   #define TSHORT       21  /* signed short,              'I' */
+#   #define TLONG        41  /* signed long,                   */
+#   #define TLONGLONG    81  /* 64-bit long signed integer 'K' */
+#   #define TFLOAT       42  /* single precision float,    'E' */
+#   #define TDOUBLE      82  /* double precision float,    'D' */
+#   #define TCOMPLEX     83  /* complex (pair of floats)   'C' */
+#   #define TDBLCOMPLEX 163  /* double complex (2 doubles) 'M' */
+#   The following data type codes are also supported by CFITSIO:
+#   #define TINT         31  /* int                            */
+#   #define TSBYTE       12  /* 8-bit signed byte,         'S' */
+#   #define TUINT        30  /* unsigned int               'V' */
+#   #define TUSHORT      20  /* unsigned short             'U'  */
+#   #define TULONG       40  /* unsigned long                  */
+#   The following data type code is only for use with fits\_get\_coltype
+#   #define TINT32BIT    41  /* signed 32-bit int,         'J' */
+
+
 
 _NUMPY_TO_FITS_CODE = {
     # Integers
