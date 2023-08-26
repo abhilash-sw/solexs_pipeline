@@ -5,7 +5,7 @@
 # @File Name: interm_L1.py
 # @Project: solexs_pipeline
 #
-# @Last Modified time: 2023-08-01 12:31:23 pm
+# @Last Modified time: 2023-08-26 08:15:11 am
 #####################################################
 
 import numpy as np
@@ -14,6 +14,7 @@ import os
 import glob
 import pkg_resources
 from .fits_utils import PHAII, LC
+from .logging import setup_logger
 
 """TODO
 1. Define pi energy bins [DONE]
@@ -23,7 +24,7 @@ from .fits_utils import PHAII, LC
 5. Time in PI files should be one entire day in units of seconds from certain epoch. [DONE]
 6. Time in interm PHA files to time in PI files? Let us not fix time array for L1. let the first time value be variable. [DONE]
 """
-
+log = setup_logger(__name__)
 CPF_DIR = pkg_resources.resource_filename(
     'solexs_pipeline', 'CALDB/aditya-l1/solexs/data/cpf')
 
@@ -31,13 +32,18 @@ CPF_DIR = pkg_resources.resource_filename(
 class L1_directory():
 
     def __init__(self,interm_dir_path) -> None:
+        log.info('Intermediate to L1 data pipeline initiated.')
+        log.info(f'Input intermediate directory: {interm_dir_path}')
+
         self.interm_dir_path = interm_dir_path
         self.input_filename = os.path.basename(self.interm_dir_path).split('_interm')[0]
         pass
 
     def make_l1_dir(self, output_dir=None, clobber=True):
         output_dir = os.path.join(os.path.dirname(self.interm_dir_path),f'{self.input_filename}_L1')
-        if os.path.exists(output_dir) and clobber:  # TODO add log
+        log.info(f'Making L1 directory: {output_dir}')
+        if os.path.exists(output_dir) and clobber:
+            log.warning(f'L1 directory already exist. Removing.')
             os.removedirs(output_dir)
         os.makedirs(output_dir)
         sdd1_output_dir = os.path.join(output_dir, 'SDD1')
@@ -52,12 +58,15 @@ class L1_directory():
         file_name = glob.glob(file_path)
         if not file_name:
             # TODO Exit gracefully using proper FileNotFoundError https://stackoverflow.com/questions/36077266/how-do-i-raise-a-filenotfounderror-properly
-            print(f'{file_name} not found. Exiting...')
+            log.error(f'{file_name} not found. Exiting.')
+        log.info(f'Loading intermediate data file: {file_name[0]}')
         hdus = fits.open(file_name[0])
         return hdus
     
     def rebin_pha_to_pi(self,SDD_number,hdus_pha):
+        log.info(f'Rebinning from PHA to PI energy bins for SDD{SDD_number}.')
         pi_ene_file = os.path.join(CPF_DIR,'ebounds','ebounds_out',f'energy_bins_out_PI_SDD{SDD_number}.dat')
+        log.info(f'PI energy bins file used for SDD{SDD_number}: {pi_ene_file}')
         pi_ene = np.loadtxt(pi_ene_file)
 
         # hdus_pha = self.load_interm_file(SDD_number,'pha')
@@ -169,6 +178,7 @@ class L1_directory():
         
 
     def calc_gti(self,SDD_number): # Not Implemented #TODO
+        log.info(f'Calculating GTI for SDD{SDD_number}')
         pass 
 
     def create_l1_files(self,SDD_number):
@@ -178,11 +188,14 @@ class L1_directory():
         return l1_pi_file, l1_lc_file
     
     def write_l1_files(self,SDD_number):
+        log.info(f'Creating L1 files for SDD{SDD_number}')
         l1_pi_file, l1_lc_file = self.create_l1_files(SDD_number)
         sdd_l1_dir = os.path.join(self.output_dir,f'SDD{SDD_number}')
 
         l1_pi_filename = os.path.join(sdd_l1_dir,f'{self.input_filename}_SDD{SDD_number}_L1.pha')
         l1_pi_file.writeto(l1_pi_filename)
+        log.info(f'Created PI L1 file: {l1_pi_filename}')
 
         l1_lc_filename = os.path.join(sdd_l1_dir,f'{self.input_filename}_SDD{SDD_number}_L1.lc')
         l1_lc_file.writeto(l1_lc_filename)
+        log.info(f'Created LC L1 file: {l1_lc_filename}')

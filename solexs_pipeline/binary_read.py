@@ -5,7 +5,7 @@
 # @File Name: binary_read.py
 # @Project: solexs_pipeline
 
-# @Last Modified time: 2023-08-09 09:40:13 am
+# @Last Modified time: 2023-08-25 10:49:40 pm
 #####################################################
 
 import os
@@ -13,6 +13,9 @@ import numpy as np
 import pkg_resources
 # from numba import jit#, prange
 #from . import calibration_spectrum_fitting
+from .logging import setup_logger
+
+log = setup_logger(__name__)
 
 HDR_SIZE = 20 #bytes
 SPECTRAL_DATA_SIZE = 680 #bytes
@@ -41,6 +44,9 @@ class solexs_header():
 
         hk_conv_data1 = self.read_hk_conversion_file(HK_CONVERSION_FILE_SDD1)
         hk_conv_data2 = self.read_hk_conversion_file(HK_CONVERSION_FILE_SDD2)
+
+        log.info(f'Housekeeping data calibration file for SDD1: {HK_CONVERSION_FILE_SDD1}')
+        log.info(f'Housekeeping data calibration file for SDD2: {HK_CONVERSION_FILE_SDD2}')
 
         #sixth byte
         self.det_id = np.bitwise_and(hdr_data_arr[:,5],1)
@@ -230,6 +236,7 @@ class solexs_lightcurve():
         SPURIOUS_THRESHOLD = 3e4
         ids = np.where(count_rate>SPURIOUS_THRESHOLD)
         ids = ids[0]
+        log.warning(f'Number of spurious counts removed from lightcurve: {len(ids)}')
         new_count_rate = count_rate
         for ii in ids:
             new_count_rate[ii] = np.median(count_rate[ii-5:ii+5])
@@ -300,6 +307,9 @@ class read_solexs_binary_data():
     """
 
     def __init__(self,input_filename,data_type='Raw'):
+        log.info(f'Reading binary data.')
+        log.info(f'Filename: {input_filename}')
+        log.info(f'Data type: {data_type}')
         self.input_filename = input_filename
         self.data_type = data_type#'Raw'
 
@@ -310,7 +320,9 @@ class read_solexs_binary_data():
             # if not os.path.isfile(filename):
 
             file_size = os.path.getsize(input_filename)
+            log.info(f'Size of binary file: {file_size}')
             self.n_data_packets = int(np.floor(os.path.getsize(input_filename)/self.packet_size))
+            log.info(f'Number of data packets in binary file: {self.n_data_packets}')
 
             if np.mod(file_size,self.packet_size)==0:
                 self.left_over_data_flag = 0
@@ -323,7 +335,9 @@ class read_solexs_binary_data():
             data_sdd1 = data_full[det_id==0,:]
             data_sdd2 = data_full[det_id==1,:]
 
+            log.info('Reading binary data for SDD1')
             self.SDD1 = SDD_data_structure(data_sdd1)
+            log.info('Reading binary data for SDD2')
             self.SDD2 = SDD_data_structure(data_sdd2)
 
         if self.data_type == 'SP':
@@ -333,7 +347,10 @@ class read_solexs_binary_data():
             # if not os.path.isfile(filename):
 
             file_size = os.path.getsize(input_filename)
+            log.info(f'Size of binary file: {file_size}')
             self.n_data_packets = int(np.floor(os.path.getsize(input_filename)/self.packet_size))
+            log.info(
+                f'Number of data packets in binary file: {self.n_data_packets}')
 
             if np.mod(file_size,self.packet_size)==0:
                 self.left_over_data_flag = 0
@@ -358,7 +375,10 @@ class read_solexs_binary_data():
 
             self.packet_size = PLD_PACKET_HEADER_SIZE + HDR_SIZE + SPECTRAL_DATA_SIZE + TIMING_DATA_SIZE
             file_size = os.path.getsize(input_filename)
+            log.info(f'Size of binary file: {file_size}')
             self.n_data_packets = int(np.floor(os.path.getsize(input_filename)/self.packet_size))
+            log.info(
+                f'Number of data packets in binary file: {self.n_data_packets}')
 
             if np.mod(file_size, self.packet_size) == 0:
                 self.left_over_data_flag = 0
@@ -387,7 +407,7 @@ class read_solexs_binary_data():
         data_full = np.fromfile(self.input_filename,dtype='uint8')
 
         if self.left_over_data_flag:
-            print('Left over bytes to be ignored.')
+            log.warning('Left over bytes to be ignored.')
             extra_bytes = np.mod(self.n_data_packets,self.packet_size)
             # bin_data_full_arr = bin_data_full_arr[:-extra_bytes]
             data_full = data_full[:-extra_bytes]

@@ -5,7 +5,7 @@
 # @File Name: L0_interm.py
 # @Project: solexs_pipeline
 #
-# @Last Modified time: 2023-08-09 09:42:14 am
+# @Last Modified time: 2023-08-26 08:24:23 am
 #####################################################
 
 from .binary_read import read_solexs_binary_data
@@ -36,7 +36,7 @@ PACQ files to
 6. Raw Lightcurve
 """
 
-log = setup_logger(f'solexs_pipeline.{__name__}')
+log = setup_logger(__name__)
 BCF_DIR = f'{curr_dir}/CALDB/aditya-l1/solexs/data/bcf'
 
 
@@ -53,6 +53,10 @@ BCF_DIR = f'{curr_dir}/CALDB/aditya-l1/solexs/data/bcf'
 class intermediate_directory():
     # input_file: Path to solexs binary data file
     def __init__(self, input_file, input_file_data_type = 'Raw' ,output_dir=None, clobber=True) -> None:
+        log.info('L0 to intermediate data pipeline initiated.')
+        log.info(f'Input file: {input_file}')
+        log.info(f'Data type: {input_file_data_type}')
+        
         self.input_file = input_file
         self.input_filename = os.path.basename(input_file)
         #self.make_interm_dir(self.input_filename,output_dir,clobber)
@@ -72,7 +76,9 @@ class intermediate_directory():
             output_dir = os.path.curdir
         
         output_dir = os.path.join(output_dir,f'{input_filename}_interm') #TODO remove extention from inputfilename if required
-        if os.path.exists(output_dir) and clobber: #TODO add log
+        log.info(f'Making intermediate directory: {output_dir}')
+        if os.path.exists(output_dir) and clobber:
+            log.warning(f'Intermediate directory already exist. Removing.')
             os.removedirs(output_dir)
         os.makedirs(output_dir)
         sdd1_output_dir = os.path.join(output_dir,'SDD1')
@@ -90,6 +96,12 @@ class intermediate_directory():
         ELE_SIGMA_FILE = f'{BCF_DIR}/electronic_noise/electronic_noise.txt'
         FANO_FILE = f'{BCF_DIR}/electronic_noise/fano.txt'
         OFFSET_FILE = f'{BCF_DIR}/offset/offset_SDD{SDD_no}.txt'
+
+        log.info(f'BCF CALDB used for SDD{SDD_no} to generate intermediate data products:')
+        log.info(f'Gain: {GAIN_FILE}')
+        log.info(f'Electronic sigma: {ELE_SIGMA_FILE}')
+        log.info(f'Fano: {FANO_FILE}')
+        log.info(f'Offset: {OFFSET_FILE}')
 
 
         gain_data = np.loadtxt(GAIN_FILE,usecols=[1,2])
@@ -109,10 +121,12 @@ class intermediate_directory():
         return gain, offset_data, electronic_sigma, fano
     
     def read_lbt_hk_data(self,lbt_hk_data_file=None): #TODO temporary. assuming electronics box temperature is 0 degrees
+        log.info('Reading LBT HK data.')
         self.ele_box_temp_SDD1 = np.zeros(self.n_SDD1)
         self.ele_box_temp_SDD2 = np.zeros(self.n_SDD2)
     
     def calc_energy_bins(self,SDD_number):
+        log.info(f'Calculating energy bins for SDD{SDD_number}')
         gain, offset_data, electronic_sigma, fano = self.load_bcf_caldb(SDD_number=SDD_number)
         sdd_data = getattr(self.solexs_bd,f'SDD{SDD_number}')
         gain_f = gain/sdd_data.hdr_data.gain
@@ -129,6 +143,7 @@ class intermediate_directory():
         return energy_bins_mat
     
     def get_start_time(self,SDD_number):
+        log.info('Calculating start time using TCT file.')
         """
         Output: In seconds from standard epoch
 
@@ -205,17 +220,21 @@ class intermediate_directory():
         return pha_interm_file, lc_interm_file, hk_interm_file
     
     def write_interm_files(self,SDD_number):
+        log.info(f'Creating intermediate files for SDD{SDD_number}')
         pha_interm_file, lc_interm_file, hk_interm_file = self.create_interm_files(SDD_number)
         sdd_interm_dir = os.path.join(self.output_dir,f'SDD{SDD_number}')
         
         pha_filename = os.path.join(
             sdd_interm_dir, f'{self.input_filename}_SDD{SDD_number}_interm.pha')
         pha_interm_file.writeto(pha_filename)
+        log.info(f'Created phaII intermediate file: {pha_filename}')
 
         lc_filename = os.path.join(
             sdd_interm_dir, f'{self.input_filename}_SDD{SDD_number}_interm.lc')
         lc_interm_file.writeto(lc_filename)
+        log.info(f'Created lc intermediate file: {lc_filename}')
 
         hk_filename = os.path.join(
             sdd_interm_dir, f'{self.input_filename}_SDD{SDD_number}_interm.hk')
         hk_interm_file.writeto(hk_filename)
+        log.info(f'Created hk intermediate file: {hk_filename}')

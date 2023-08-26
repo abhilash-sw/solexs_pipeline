@@ -5,7 +5,7 @@
 # @File Name: logging.py
 # @Project: solexs_pipeline
 #
-# @Last Modified time: 2023-05-11 09:22:45
+# @Last Modified time: 2023-08-26 08:26:56 am
 #####################################################
 
 import logging
@@ -14,6 +14,13 @@ import sys
 
 
 #3ML.io.logging
+
+"""TODO
+check logging config files
+"""
+
+formatter = logging.Formatter(
+    '%(asctime)s - %(name)s - %(levelname)s - %(message)s')
 
 def setup_logger(name,log_filename=None):
 
@@ -30,10 +37,17 @@ def setup_logger(name,log_filename=None):
     # create console handler with a higher log level
     ch = logging.StreamHandler()
     ch.setLevel(logging.DEBUG)
+    ch.setFormatter(formatter)
     # log.addHandler(fh)
     log.addHandler(ch)
 
     # we do not want to duplicate the messages in the parents
-    #log.propagate = False
+    log.propagate = False
 
     return log
+
+def create_fileHandler(log_filename):
+    fh = logging.FileHandler(log_filename)
+    fh.setLevel(logging.DEBUG)
+    fh.setFormatter(formatter)
+    return fh
