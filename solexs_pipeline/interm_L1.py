@@ -5,7 +5,7 @@
 # @File Name: interm_L1.py
 # @Project: solexs_pipeline
 #
-# @Last Modified time: 2023-08-26 08:15:11 am
+# @Last Modified time: 2023-08-29 06:39:06 pm
 #####################################################
 
 import numpy as np
@@ -23,6 +23,7 @@ from .logging import setup_logger
 4. PI files, rebin to ebounds in CPF. [DONE]
 5. Time in PI files should be one entire day in units of seconds from certain epoch. [DONE]
 6. Time in interm PHA files to time in PI files? Let us not fix time array for L1. let the first time value be variable. [DONE]
+7. Add allday_hk file as well.
 """
 log = setup_logger(__name__)
 CPF_DIR = pkg_resources.resource_filename(
@@ -31,16 +32,17 @@ CPF_DIR = pkg_resources.resource_filename(
 
 class L1_directory():
 
-    def __init__(self,interm_dir_path) -> None:
+    def __init__(self,interm_dir_paths) -> None:
         log.info('Intermediate to L1 data pipeline initiated.')
-        log.info(f'Input intermediate directory: {interm_dir_path}')
+        log.info(f'Input intermediate directory: {interm_dir_paths}')
 
-        self.interm_dir_path = interm_dir_path
-        self.input_filename = os.path.basename(self.interm_dir_path).split('_interm')[0]
+        self.interm_dir_paths = interm_dir_paths
+        self.input_filename = os.path.basename(self.interm_dir_paths[0]).split('_interm')[0] #TODO change to generic filename
         pass
 
     def make_l1_dir(self, output_dir=None, clobber=True):
-        output_dir = os.path.join(os.path.dirname(self.interm_dir_path),f'{self.input_filename}_L1')
+        output_dir = os.path.join(os.path.dirname(
+            self.interm_dir_paths[0]), f'{self.input_filename}_L1')  # TODO change to generic filename
         log.info(f'Making L1 directory: {output_dir}')
         if os.path.exists(output_dir) and clobber:
             log.warning(f'L1 directory already exist. Removing.')
@@ -54,14 +56,17 @@ class L1_directory():
         os.makedirs(sdd2_output_dir)
 
     def load_interm_file(self,SDD_number,file_type): #file_type -> pha/lc/hk
-        file_path = os.path.join(self.interm_dir_path,f'SDD{SDD_number}',f'*.{file_type}')
-        file_name = glob.glob(file_path)
-        if not file_name:
-            # TODO Exit gracefully using proper FileNotFoundError https://stackoverflow.com/questions/36077266/how-do-i-raise-a-filenotfounderror-properly
-            log.error(f'{file_name} not found. Exiting.')
-        log.info(f'Loading intermediate data file: {file_name[0]}')
-        hdus = fits.open(file_name[0])
-        return hdus
+        hdus_list = []
+        for interm_dir_path in self.interm_dir_paths:
+            file_path = os.path.join(interm_dir_path,f'SDD{SDD_number}',f'*.{file_type}')
+            file_name = glob.glob(file_path)
+            if not file_name:
+                # TODO Exit gracefully using proper FileNotFoundError https://stackoverflow.com/questions/36077266/how-do-i-raise-a-filenotfounderror-properly
+                log.error(f'{file_name} not found. Exiting.')
+            log.info(f'Loading intermediate data file: {file_name[0]}')
+            hdus = fits.open(file_name[0])
+            hdus_list.append(hdus)
+        return hdus_list
     
     def rebin_pha_to_pi(self,SDD_number,hdus_pha):
         log.info(f'Rebinning from PHA to PI energy bins for SDD{SDD_number}.')
@@ -87,6 +92,19 @@ class L1_directory():
         return pi_spec
         
     def allday_pi_spec(self,time_solexs,pi_spec): #time in seconds
+        # Checking uniqueness
+        time_solexs_u, sort_i = np.unique(time_solexs, return_index=True)
+        if len(time_solexs_u) < len(time_solexs):
+            log.warning('Overlap in spectral data found.') # TODO log.error if don't want to proceed
+        
+        pi_spec = pi_spec[sort_i,:]
+        time_solexs = time_solexs_u
+        
+        # Sorting
+        sort_i = np.argsort(time_solexs)
+        time_solexs = time_solexs[sort_i]
+        pi_spec = pi_spec[sort_i, :]
+
         assert (time_solexs[-1] - time_solexs[0]
                 ) < 86400.0  # TODO Exit gracefully
 
@@ -108,6 +126,20 @@ class L1_directory():
         return all_time, all_pi_spec
 
     def allday_lc(self,time_solexs,lc):
+        # Checking uniqueness
+        time_solexs_u, sort_i = np.unique(time_solexs, return_index=True)
+        if len(time_solexs_u) < len(time_solexs):
+            # TODO log.error if don't want to proceed
+            log.warning('Overlap in temporal data found.')
+
+        lc = lc[sort_i]
+        time_solexs = time_solexs_u
+
+        # Sorting
+        sort_i = np.argsort(time_solexs)
+        time_solexs = time_solexs[sort_i]
+        lc = lc[sort_i]
+
         assert (time_solexs[-1] - time_solexs[0]
                 ) < 86400.0  # TODO Exit gracefully
 
@@ -128,10 +160,19 @@ class L1_directory():
         return all_time, all_lc
     
     def pi_file(self,SDD_number):
-        hdus_pha = self.load_interm_file(SDD_number, 'pha')
-        filename = hdus_pha[0].header['filename']
-        pi_spec = self.rebin_pha_to_pi(SDD_number, hdus_pha)
-        time_solexs = hdus_pha[1].data['TSTART']
+        hdus_pha_list = self.load_interm_file(SDD_number, 'pha')
+        filename = hdus_pha_list[0][0].header['filename'] #TODO change to generic filename
+
+        pi_spec = np.zeros((0,340))
+        for hdus_pha in hdus_pha_list:
+            tmp_pi_spec = self.rebin_pha_to_pi(SDD_number, hdus_pha)
+            pi_spec = np.vstack((pi_spec,tmp_pi_spec))
+
+        time_solexs = np.zeros(0)
+        for hdus_pha in hdus_pha_list:
+            tmp_time_solexs = hdus_pha[1].data['TSTART']
+            time_solexs = np.hstack((time_solexs,tmp_time_solexs))
+
         all_time, all_pi_spec = self.allday_pi_spec(time_solexs,pi_spec)
 
         # n_SDD = getattr(self, f'n_SDD{SDD_number}')
@@ -148,9 +189,16 @@ class L1_directory():
         return l1_pi_file
     
     def lc_file(self,SDD_number):
-        hdus_lc = self.load_interm_file(SDD_number, 'lc')
-        filename = hdus_lc[0].header['filename']
-        lc_data = hdus_lc[2].data
+        hdus_lc_list = self.load_interm_file(SDD_number, 'lc')
+        # TODO change to generic filename
+        filename = hdus_lc_list[0][0].header['filename']
+
+        lc_data = hdus_lc_list[0][2].data
+        if len(hdus_lc_list) > 1:
+            for hdus_lc in hdus_lc_list[1:]:
+                tmp_lc_data = hdus_lc[2].data
+                lc_data = np.append(lc_data,tmp_lc_data)
+            
         time_solexs = lc_data['TIME']
         all_time, lc_low = self.allday_lc(time_solexs, lc_data['COUNTS_LOW'])
         all_time, lc_med = self.allday_lc(time_solexs, lc_data['COUNTS_MED'])
