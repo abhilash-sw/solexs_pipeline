@@ -5,7 +5,7 @@
 # @File Name: interm_L1.py
 # @Project: solexs_pipeline
 #
-# @Last Modified time: 2023-08-29 06:39:06 pm
+# @Last Modified time: 2023-08-29 06:47:11 pm
 #####################################################
 
 import numpy as np
@@ -205,8 +205,9 @@ class L1_directory():
         all_time, lc_high = self.allday_lc(time_solexs, lc_data['COUNTS_HIGH'])
         all_time, lc_all = self.allday_lc(time_solexs, lc_data['COUNTS_ALL'])
 
-        lower_thresh = hdus_lc[1].data['LOWER_THRESH']
-        higher_thresh = hdus_lc[1].data['HIGHER_THRESH']
+        #TODO what happens if multiple files have different thresholds
+        lower_thresh = hdus_lc_list[0][1].data['LOWER_THRESH']  #Using first files threshold
+        higher_thresh = hdus_lc_list[0][1].data['HIGHER_THRESH'] #Using first files threshold
 
         # Handle changes in threshold values separately
         assert len(np.unique(lower_thresh)) == 1
