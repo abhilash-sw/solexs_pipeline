@@ -9,7 +9,7 @@ import os
 log = setup_logger('solexs_pipeline')
 
 @click.command()
-@click.option('-i', '--input_file', help='Input SoLEXS Instrument Data File')
+@click.option('-i', '--input_file', help='Input SoLEXS Instrument Data File', multiple=True)
 @click.option('-dt', '--data_type', default='Raw', show_default=True, help='Raw/SP/L0')
 def main(input_file,data_type,args=None):
     """Console script for solexs_pipeline."""
@@ -22,19 +22,24 @@ def main(input_file,data_type,args=None):
     log.info('SoLEXS pipeline command line interface initiated.')
     log.info(f'Input file: {input_file}')
     log.info(f'Data type: {data_type}')
-    filename = input_file#click.option('filename',type=click.Path(exists=True))
 
-    # Intermediate Directory
     log.info('Initiating L0 to intermediate data pipeline.')
-    interm_dir = intermediate_directory(filename, input_file_data_type=data_type)
-    interm_dir.make_interm_dir(filename)
-    interm_dir.write_interm_files(SDD_number=1)
-    interm_dir.write_interm_files(SDD_number=2)
+    interm_dir_paths = []
+    for i_f in input_file:
+        filename = i_f#click.option('filename',type=click.Path(exists=True))
+
+        # Intermediate Directory
+        interm_dir = intermediate_directory(filename, input_file_data_type=data_type)
+        interm_dir.make_interm_dir(filename)
+        interm_dir.write_interm_files(SDD_number=1)
+        interm_dir.write_interm_files(SDD_number=2)
+
+        interm_dir_paths.append(interm_dir.output_dir)
 
     # L1 Directory
     log.info('Initiating intermediate to L1 data pipeline.')
-    interm_dir_path = interm_dir.output_dir
-    l1_dir = L1_directory(interm_dir_path)
+    # interm_dir_path = interm_dir.output_dir
+    l1_dir = L1_directory(interm_dir_paths)
     l1_dir.make_l1_dir()
     l1_dir.write_l1_files(SDD_number=1)
     l1_dir.write_l1_files(SDD_number=2)
