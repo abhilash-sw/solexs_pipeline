@@ -5,12 +5,13 @@
 # @File Name: binary_read.py
 # @Project: solexs_pipeline
 
-# @Last Modified time: 2023-08-25 10:49:40 pm
+# @Last Modified time: 2023-10-16 01:32:55 pm
 #####################################################
 
 import os
 import numpy as np
 import pkg_resources
+import datetime
 # from numba import jit#, prange
 #from . import calibration_spectrum_fitting
 from .logging import setup_logger
@@ -297,12 +298,41 @@ class space_packet_header():
 
 
 class pld_packet_header():
-    def __init__(self) -> None:
-        pass
+    def __init__(self, pld_packet_header_data,n_data_packets) -> None:
+        self.pld_utc_time, self.pld_utc_datetime = self.read_pld_utc_time(
+            pld_packet_header_data, n_data_packets)
+        
+        log.info(f'Start Time: {self.pld_utc_datetime[0].isoformat()}')
+        log.info(f'Stop Time: {self.pld_utc_datetime[-1].isoformat()}')
+        time_duration = self.pld_utc_datetime[-1] - \
+            self.pld_utc_datetime[0]
+        log.info(f'Duration: {time_duration} seconds')
+        
+    
+    def read_pld_utc_time(self, pld_packet_header_data,n_data_packets):
+        pld_utc_time_bin = pld_packet_header_data[:, 32:32+28]
+        pld_utc_time = np.zeros((n_data_packets,7),dtype='uint32')
+
+        for i in range(7):
+            tmp_tm = pld_utc_time_bin[:,i*4:(i+1)*4].copy()
+            tmp_tm.dtype = 'uint32'
+            tmp_tm = tmp_tm.reshape(n_data_packets)
+            pld_utc_time[:, i] = tmp_tm
+
+        pld_utc_time[:, -1] = pld_utc_time[:, -1]*100 #converting millisecond*10 to microsends
+
+        pld_utc_datetime = []
+        for i in range(n_data_packets):
+            pld_utc_datetime.append(datetime.datetime(*pld_utc_time[i]))
+        
+        return pld_utc_time, pld_utc_datetime
+        
+
+        
 
 class read_solexs_binary_data():
     """
-    Read SoLEXS binary data and segregate header, spectral and timing data. Data Types can be "Raw", "SP" (Space Packet), "PLD"
+    Read SoLEXS binary data and segregate header, spectral and timing data. Data Types can be "Raw", "SP" (Space Packet), "L0"
     Output: SDD data structure
     """
 
@@ -389,6 +419,9 @@ class read_solexs_binary_data():
 
             pld_packet_header_data = data_full[:, :PLD_PACKET_HEADER_SIZE]
             data_full = data_full[:, PLD_PACKET_HEADER_SIZE:]
+
+            self.pld_header = pld_packet_header(
+                pld_packet_header_data, self.n_data_packets)
 
             det_id = np.bitwise_and(data_full[:, 5], 1)
             data_sdd1 = data_full[det_id == 0, :]
