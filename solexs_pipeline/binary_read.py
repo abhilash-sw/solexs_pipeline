@@ -5,7 +5,7 @@
 # @File Name: binary_read.py
 # @Project: solexs_pipeline
 
-# @Last Modified time: 2023-10-16 01:32:55 pm
+# @Last Modified time: 2023-10-16 09:16:24 pm
 #####################################################
 
 import os
@@ -420,12 +420,16 @@ class read_solexs_binary_data():
             pld_packet_header_data = data_full[:, :PLD_PACKET_HEADER_SIZE]
             data_full = data_full[:, PLD_PACKET_HEADER_SIZE:]
 
-            self.pld_header = pld_packet_header(
-                pld_packet_header_data, self.n_data_packets)
-
             det_id = np.bitwise_and(data_full[:, 5], 1)
             data_sdd1 = data_full[det_id == 0, :]
             data_sdd2 = data_full[det_id == 1, :]
+
+            n_data_packets_SDD1 = np.sum(det_id==0)
+            n_data_packets_SDD2 = np.sum(det_id==1)
+            self.pld_header_SDD1 = pld_packet_header(
+                pld_packet_header_data[det_id == 0, :], n_data_packets_SDD1)
+            self.pld_header_SDD2 = pld_packet_header(
+                pld_packet_header_data[det_id == 1, :], n_data_packets_SDD2)
 
             self.SDD1 = SDD_data_structure(data_sdd1)
             self.SDD2 = SDD_data_structure(data_sdd2)
