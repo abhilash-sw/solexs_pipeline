@@ -49,6 +49,6 @@ setup(
     tests_require=test_requirements,
     #url='https://github.com/leme-cosmo/solexs_pipeline',
     url = 'http://cdeg.isac.dos.gov.in:8081/gitlab/sarwade/solexs_pipeline',
-    version='0.0.81',
+    version='0.0.82',
     zip_safe=False,
 )
