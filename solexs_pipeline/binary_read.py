@@ -5,7 +5,7 @@
 # @File Name: binary_read.py
 # @Project: solexs_pipeline
 
-# @Last Modified time: 2023-12-08 01:49:48 pm
+# @Last Modified time: 2023-12-08 02:02:47 pm
 #####################################################
 
 import os
@@ -187,6 +187,16 @@ class solexs_spectrum():
 
     def make_lightcurve(self,channel_start=0,channel_stop=n_channels):
         self.lightcurve = self.spectra[channel_start:channel_stop,:].sum(axis=0)
+    
+    def make_spectrogram(self,rebin_sec):
+        spectra = self.spectra
+        extra_bins = spectra.shape[1] % rebin_sec
+        if extra_bins != 0:
+            spectra = spectra[:,:-extra_bins]
+        new_bins = int(spectra.shape[1]/rebin_sec)
+        new_spectra = spectra.reshape(340,new_bins,rebin_sec).sum(axis=2)
+        new_tm = np.arange(new_bins)*rebin_sec
+        return new_spectra,new_tm
 
 
 
