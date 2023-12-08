@@ -5,7 +5,7 @@
 # @File Name: binary_read.py
 # @Project: solexs_pipeline
 
-# @Last Modified time: 2023-10-16 09:16:24 pm
+# @Last Modified time: 2023-12-08 01:49:48 pm
 #####################################################
 
 import os
@@ -299,7 +299,7 @@ class space_packet_header():
 
 class pld_packet_header():
     def __init__(self, pld_packet_header_data,n_data_packets) -> None:
-        self.pld_utc_time, self.pld_utc_datetime = self.read_pld_utc_time(
+        self.pld_utc_time, self.pld_utc_datetime, self.pld_utc_timestamp = self.read_pld_utc_time(
             pld_packet_header_data, n_data_packets)
         
         log.info(f'Start Time: {self.pld_utc_datetime[0].isoformat()}')
@@ -319,13 +319,15 @@ class pld_packet_header():
             tmp_tm = tmp_tm.reshape(n_data_packets)
             pld_utc_time[:, i] = tmp_tm
 
-        pld_utc_time[:, -1] = pld_utc_time[:, -1]*100 #converting millisecond*10 to microsends
+        pld_utc_time[:, -1] = 0#pld_utc_time[:, -1]#*100 #converting millisecond*10 to microsends
 
         pld_utc_datetime = []
+        pld_utc_timestamp = np.zeros(n_data_packets)
         for i in range(n_data_packets):
             pld_utc_datetime.append(datetime.datetime(*pld_utc_time[i]))
+            pld_utc_timestamp[i] = pld_utc_datetime[-1].timestamp()
         
-        return pld_utc_time, pld_utc_datetime
+        return pld_utc_time, pld_utc_datetime, pld_utc_timestamp
         
 
         
