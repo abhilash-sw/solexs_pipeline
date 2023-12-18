@@ -5,7 +5,7 @@
 # @File Name: binary_read.py
 # @Project: solexs_pipeline
 
-# @Last Modified time: 2023-12-18 10:26:47 pm
+# @Last Modified time: 2023-12-18 10:28:00 pm
 #####################################################
 
 import os
@@ -329,7 +329,6 @@ class pld_packet_header():
             pld_utc_timestamp[i] = pld_utc_datetime[-1].timestamp()
 
         return pld_utc_time, pld_utc_datetime, pld_utc_timestamp
-
         
 
         
