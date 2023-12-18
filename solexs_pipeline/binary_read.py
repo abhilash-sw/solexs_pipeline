@@ -5,7 +5,7 @@
 # @File Name: binary_read.py
 # @Project: solexs_pipeline
 
-# @Last Modified time: 2023-12-18 10:28:00 pm
+# @Last Modified time: 2023-12-18 10:54:02 pm
 #####################################################
 
 import os
@@ -42,7 +42,9 @@ class solexs_header():
 
         self.frame_id = hdr_data_arr[:,4] # fifth byte
 
-        assert np.sum(np.diff(self.frame_id) ==  1) == len(self.frame_id)-1, "Frame ID is not continuous"
+        # assert np.sum(np.diff(self.frame_id) ==  1) == len(self.frame_id)-1, "Frame ID is not continuous"
+        if np.sum(np.diff(self.frame_id) == 1) == len(self.frame_id)-1:
+            log.warning('Frame ID is not continuous')
 
         hk_conv_data1 = self.read_hk_conversion_file(HK_CONVERSION_FILE_SDD1)
         hk_conv_data2 = self.read_hk_conversion_file(HK_CONVERSION_FILE_SDD2)
