@@ -5,7 +5,7 @@
 # @File Name: binary_read.py
 # @Project: solexs_pipeline
 
-# @Last Modified time: 2023-10-16 09:16:24 pm
+# @Last Modified time: 2023-12-18 10:22:49 pm
 #####################################################
 
 import os
@@ -302,11 +302,11 @@ class pld_packet_header():
         self.pld_utc_time, self.pld_utc_datetime = self.read_pld_utc_time(
             pld_packet_header_data, n_data_packets)
         
-        log.info(f'Start Time: {self.pld_utc_datetime[0].isoformat()}')
-        log.info(f'Stop Time: {self.pld_utc_datetime[-1].isoformat()}')
-        time_duration = self.pld_utc_datetime[-1] - \
-            self.pld_utc_datetime[0]
-        log.info(f'Duration: {time_duration} seconds')
+        # log.info(f'Start Time: {self.pld_utc_datetime[0].isoformat()}')
+        # log.info(f'Stop Time: {self.pld_utc_datetime[-1].isoformat()}')
+        # time_duration = self.pld_utc_datetime[-1] - \
+        #     self.pld_utc_datetime[0]
+        # log.info(f'Duration: {time_duration} seconds')
         
     
     def read_pld_utc_time(self, pld_packet_header_data,n_data_packets):
@@ -319,11 +319,11 @@ class pld_packet_header():
             tmp_tm = tmp_tm.reshape(n_data_packets)
             pld_utc_time[:, i] = tmp_tm
 
-        pld_utc_time[:, -1] = pld_utc_time[:, -1]*100 #converting millisecond*10 to microsends
+        # pld_utc_time[:, -1] = pld_utc_time[:, -1]*100 #converting millisecond*10 to microsends
 
         pld_utc_datetime = []
-        for i in range(n_data_packets):
-            pld_utc_datetime.append(datetime.datetime(*pld_utc_time[i]))
+        # for i in range(n_data_packets):
+        #     pld_utc_datetime.append(datetime.datetime(*pld_utc_time[i]))
         
         return pld_utc_time, pld_utc_datetime
         
@@ -454,3 +454,53 @@ class read_solexs_binary_data():
         data_full = data_full.reshape(self.n_data_packets,self.packet_size)
         return data_full
 
+
+class analog_hk_data():
+    def __init__(self, analog_hk_file) -> None:
+        log.info(f'Reading analog HK data from {analog_hk_file}')
+        hk_utc_datetime, hk_utc_timestamp, hk_ele, hk_det, hk_rad = self.read_analog_hk(
+            analog_hk_file)
+        hk_ele = self.remove_spurious_data(hk_ele)
+        hk_det = self.remove_spurious_data(hk_det)
+        hk_rad = self.remove_spurious_data(hk_rad)
+
+        self.hk_utc_datetime = hk_utc_datetime
+        self.hk_utc_timestamp = hk_utc_timestamp
+        self.SOLEXS_BASE_TEMP_THR = hk_ele
+        self.SOLEXS_DET_PLT_TEMP_THR = hk_det
+        self.SOLEXS_RAD_TP_Y_TEMP_THR = hk_rad
+
+    def read_analog_hk(self, analog_hk_file):
+        filename = analog_hk_file
+        data = []
+        skip_rows = 7
+        with open(filename, 'r') as f:
+            for line in f:
+                if(skip_rows):
+                    skip_rows -= 1
+                else:
+                    data.append(line.split())
+        data = data[:-1]
+
+        hk_utc_datetime = []
+        hk_utc_timestamp = []
+        hk_ele = []
+        hk_det = []
+        hk_rad = []
+        for dd in data:
+            hk_utc_datetime.append(datetime.datetime.strptime(
+                dd[0] + dd[1], '%Y/%m/%d%H:%M:%S:%f'))
+            hk_utc_timestamp.append(hk_utc_datetime[-1].timestamp())
+            hk_ele.append(float(dd[2]))
+            hk_det.append(float(dd[3]))
+            hk_rad.append(float(dd[4]))
+
+        return hk_utc_datetime, hk_utc_timestamp, hk_ele, hk_det, hk_rad
+
+    def remove_spurious_data(self, hk_data):
+        hk_data = np.array(hk_data)
+        hk_data = np.where(hk_data > 1e4, np.nan, hk_data)
+        mask = np.isnan(hk_data)
+        hk_data[mask] = np.interp(np.flatnonzero(
+            mask), np.flatnonzero(~mask), hk_data[~mask])
+        return hk_data
