@@ -5,7 +5,7 @@
 # @File Name: calibration_fit_routines.py
 # @Project: solexs_pipeline
 
-# @Last Modified time: 2023-03-13 01:36:14
+# @Last Modified time: 2023-10-27 06:01:07 pm
 #####################################################
 
 import re
@@ -250,7 +250,7 @@ class fe_ti_spectrum():
         fit_results,err_fit_results = fit_two_gaussian(ch,spec,guess=[fe_ka_guess_a,fe_ka_guess_ch,3,fe_ka_guess_a*0.2,fe_ka_guess_ch*1.1,4],lower=np.floor(fe_ka_guess_ch*0.9),upper=np.ceil(fe_ka_guess_ch*1.17))
         fit_results_ti, err_fit_results_ti = fit_gaussian(ch,spec,guess=[fe_ka_guess_a*0.2,fe_ka_guess_ch*0.75,2],lower=np.floor(fe_ka_guess_ch*0.7),upper=np.ceil(fe_ka_guess_ch*0.8))
         ch_peak = [fit_results[1],fit_results[4],fit_results_ti[1]]
-        ch_peak_err = [err_fit_results[1],err_fit_results[1],err_fit_results_ti[1]]
+        ch_peak_err = [err_fit_results[1],err_fit_results[4],err_fit_results_ti[1]]
 
         
 
