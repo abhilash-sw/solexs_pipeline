@@ -5,7 +5,7 @@
 # @File Name: fits_utils.py
 # @Project: solexs_pipeline
 
-# @Last Modified time: 2023-08-25 06:31:22 pm
+# @Last Modified time: 2023-12-18 10:32:02 pm
 #####################################################
 
 from builtins import str
@@ -985,16 +985,16 @@ class PHAII_INTERM(FITSFile):
         # collect the data so that we can have a general
         # extension builder
 
-        #TODO Remove atleast commands. It may cause memory error
+        #TODO Remove atleast commands. It may cause memory error [DONE]
         self._filename = filename
-        self._tstart = _atleast_1d_with_dtype(tstart, np.float32) * u.s
-        self._telapse = _atleast_1d_with_dtype(telapse, np.float32) * u.s
-        self._channel = _atleast_2d_with_dtype(channel, np.int16)
-        self._counts = _atleast_2d_with_dtype(counts, np.float32) #* 1.0 / u.s
-        self._exposure = _atleast_1d_with_dtype(exposure, np.float32) * u.s
-        self._quality = _atleast_2d_with_dtype(quality, np.int16)
-        self._e_min = _atleast_2d_with_dtype(e_min, np.float32) * u.keV
-        self._e_max = _atleast_2d_with_dtype(e_max, np.float32) * u.keV
+        self._tstart = tstart * u.s #_atleast_1d_with_dtype(tstart, np.float32) * u.s
+        self._telapse = telapse * u.s #_atleast_1d_with_dtype(telapse, np.float32) * u.s
+        self._channel = channel #_atleast_2d_with_dtype(channel, np.int16)
+        self._counts = counts * 1.0 / u.s #_atleast_2d_with_dtype(counts, np.float32) #* 1.0 / u.s
+        self._exposure = exposure * u.s #_atleast_1d_with_dtype(exposure, np.float32) * u.s
+        self._quality = quality #_atleast_2d_with_dtype(quality, np.int16)
+        self._e_min = e_min * u.keV #_atleast_2d_with_dtype(e_min, np.float32) * u.keV
+        self._e_max = e_max * u.keV # _atleast_2d_with_dtype(e_max, np.float32) * u.keV
 
         if sys_err is not None:
 
