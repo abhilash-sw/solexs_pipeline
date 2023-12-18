@@ -5,13 +5,14 @@
 # @File Name: binary_read.py
 # @Project: solexs_pipeline
 
-# @Last Modified time: 2023-12-18 10:22:49 pm
+# @Last Modified time: 2023-12-18 10:25:30 pm
 #####################################################
 
 import os
 import numpy as np
 import pkg_resources
 import datetime
+import glob
 # from numba import jit#, prange
 #from . import calibration_spectrum_fitting
 from .logging import setup_logger
@@ -424,8 +425,8 @@ class read_solexs_binary_data():
             data_sdd1 = data_full[det_id == 0, :]
             data_sdd2 = data_full[det_id == 1, :]
 
-            n_data_packets_SDD1 = np.sum(det_id==0)
-            n_data_packets_SDD2 = np.sum(det_id==1)
+            n_data_packets_SDD1 = np.sum(det_id == 0)
+            n_data_packets_SDD2 = np.sum(det_id == 1)
             self.pld_header_SDD1 = pld_packet_header(
                 pld_packet_header_data[det_id == 0, :], n_data_packets_SDD1)
             self.pld_header_SDD2 = pld_packet_header(
@@ -435,6 +436,15 @@ class read_solexs_binary_data():
             self.SDD2 = SDD_data_structure(data_sdd2)
 
             # self.PLD_header = pld_packet_header(pld_packet_header_data)
+            #Analog HK
+            input_file_dirname = os.path.dirname(self.input_filename)
+            input_file_basename = os.path.basename(self.input_filename)
+            analog_hk_file = glob.glob(os.path.join(
+                input_file_dirname, '*_analog.hk'))
+            # analog_hk_file = os.path.join(input_file_dirname,analog_hk_filename)
+            if analog_hk_file:
+                self.analog_hk_data = analog_hk_data(analog_hk_file[0])
+
 
     def read_file(self):
         # fid = open(self.filename,'rb')
