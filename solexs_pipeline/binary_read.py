@@ -5,7 +5,7 @@
 # @File Name: binary_read.py
 # @Project: solexs_pipeline
 
-# @Last Modified time: 2023-12-18 10:25:30 pm
+# @Last Modified time: 2023-12-18 10:26:47 pm
 #####################################################
 
 import os
@@ -299,34 +299,37 @@ class space_packet_header():
 
 
 class pld_packet_header():
-    def __init__(self, pld_packet_header_data,n_data_packets) -> None:
-        self.pld_utc_time, self.pld_utc_datetime = self.read_pld_utc_time(
+    def __init__(self, pld_packet_header_data, n_data_packets) -> None:
+        self.pld_utc_time, self.pld_utc_datetime, self.pld_utc_timestamp = self.read_pld_utc_time(
             pld_packet_header_data, n_data_packets)
-        
-        # log.info(f'Start Time: {self.pld_utc_datetime[0].isoformat()}')
-        # log.info(f'Stop Time: {self.pld_utc_datetime[-1].isoformat()}')
-        # time_duration = self.pld_utc_datetime[-1] - \
-        #     self.pld_utc_datetime[0]
-        # log.info(f'Duration: {time_duration} seconds')
-        
-    
-    def read_pld_utc_time(self, pld_packet_header_data,n_data_packets):
+
+        log.info(f'Start Time: {self.pld_utc_datetime[0].isoformat()}')
+        log.info(f'Stop Time: {self.pld_utc_datetime[-1].isoformat()}')
+        time_duration = self.pld_utc_datetime[-1] - \
+            self.pld_utc_datetime[0]
+        log.info(f'Duration: {time_duration} seconds')
+
+    def read_pld_utc_time(self, pld_packet_header_data, n_data_packets):
         pld_utc_time_bin = pld_packet_header_data[:, 32:32+28]
-        pld_utc_time = np.zeros((n_data_packets,7),dtype='uint32')
+        pld_utc_time = np.zeros((n_data_packets, 7), dtype='uint32')
 
         for i in range(7):
-            tmp_tm = pld_utc_time_bin[:,i*4:(i+1)*4].copy()
+            tmp_tm = pld_utc_time_bin[:, i*4:(i+1)*4].copy()
             tmp_tm.dtype = 'uint32'
             tmp_tm = tmp_tm.reshape(n_data_packets)
             pld_utc_time[:, i] = tmp_tm
 
-        # pld_utc_time[:, -1] = pld_utc_time[:, -1]*100 #converting millisecond*10 to microsends
+        # pld_utc_time[:, -1]#*100 #converting millisecond*10 to microsends
+        pld_utc_time[:, -1] = 0
 
         pld_utc_datetime = []
-        # for i in range(n_data_packets):
-        #     pld_utc_datetime.append(datetime.datetime(*pld_utc_time[i]))
-        
-        return pld_utc_time, pld_utc_datetime
+        pld_utc_timestamp = np.zeros(n_data_packets)
+        for i in range(n_data_packets):
+            pld_utc_datetime.append(datetime.datetime(*pld_utc_time[i]))
+            pld_utc_timestamp[i] = pld_utc_datetime[-1].timestamp()
+
+        return pld_utc_time, pld_utc_datetime, pld_utc_timestamp
+
         
 
         
