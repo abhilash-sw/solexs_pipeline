@@ -5,12 +5,13 @@
 # @File Name: utils.py
 # @Project: solexs_pipeline
 #
-# @Last Modified time: 2023-12-18 10:30:06 pm
+# @Last Modified time: 2023-12-19 08:58:54 am
 #####################################################
 
 import numpy as np
 from .binary_read import read_solexs_binary_data
 import tempfile
+import os
 
 
 def rebin_lc(lc, rebin_sec):
@@ -33,10 +34,11 @@ def generate_spectrogram(spectra, rebin_sec):
 
 
 def read_solexs_binary_data_multi(input_files, data_type='L0'):
-    temp = tempfile.NamedTemporaryFile()
+    temp = tempfile.NamedTemporaryFile(dir='.',delete=False)
     for fl in input_files:
         fp = open(fl, 'rb')
         lns = fp.read()
         temp.write(lns)
     d = read_solexs_binary_data(temp.name, 'L0')
+    # os.unlink(temp.name)
     return d
