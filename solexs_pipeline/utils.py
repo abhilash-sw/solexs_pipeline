@@ -5,7 +5,7 @@
 # @File Name: utils.py
 # @Project: solexs_pipeline
 #
-# @Last Modified time: 2023-12-19 08:58:54 am
+# @Last Modified time: 2023-12-20 08:06:45 am
 #####################################################
 
 import numpy as np
@@ -40,5 +40,6 @@ def read_solexs_binary_data_multi(input_files, data_type='L0'):
         lns = fp.read()
         temp.write(lns)
     d = read_solexs_binary_data(temp.name, 'L0')
-    # os.unlink(temp.name)
+    temp.close()
+    os.unlink(temp.name)
     return d
