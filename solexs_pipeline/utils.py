@@ -75,3 +75,19 @@ def read_goes_data(goes_json_file,wvl='long'):
     g_flx = np.array(g_flx)
 
     return g_time, g_timestamp, g_flx
+
+
+def datetime2timestamp(datetime_arr):
+    timestamp_arr = []
+    for da in datetime_arr:
+        timestamp_arr.append(da.timestamp())
+
+    timestamp_arr = np.array(timestamp_arr)
+    return timestamp_arr
+
+def timestamp2datetime(timestamp_arr):
+    datetime_arr = []
+    for ta in timestamp_arr:
+        datetime_arr.append(datetime.datetime.fromtimestamp(ta))
+
+    return datetime_arr
