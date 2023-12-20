@@ -5,13 +5,15 @@
 # @File Name: utils.py
 # @Project: solexs_pipeline
 #
-# @Last Modified time: 2023-12-20 08:06:45 am
+# @Last Modified time: 2023-12-20 09:12:58 am
 #####################################################
 
 import numpy as np
 from .binary_read import read_solexs_binary_data
 import tempfile
 import os
+import json
+import datetime
 
 
 def rebin_lc(lc, rebin_sec):
@@ -43,3 +45,33 @@ def read_solexs_binary_data_multi(input_files, data_type='L0'):
     temp.close()
     os.unlink(temp.name)
     return d
+
+
+def read_goes_data(goes_json_file,wvl='long'):
+    fp = open(goes_json_file, 'r')
+    gd = json.load(fp)
+    fp.close()
+
+    g_time = []
+    g_timestamp = []
+    g_flx = []
+
+    if wvl=='long':
+        oddeven = 0
+    elif wvl=='short':
+        oddeven = 1
+
+    for i, gdi in enumerate(gd):
+        if i % 2 == oddeven:
+            continue
+
+        g_time.append(datetime.datetime.strptime(
+            gdi['time_tag'], '%Y-%m-%dT%H:%M:%SZ'))
+        
+        g_timestamp.append(g_time[-1].timestamp())
+        g_flx.append(gdi['observed_flux'])
+
+    g_timestamp = np.array(g_timestamp)
+    g_flx = np.array(g_flx)
+
+    return g_time, g_timestamp, g_flx
