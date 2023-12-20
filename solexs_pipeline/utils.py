@@ -16,13 +16,32 @@ import json
 import datetime
 
 
-def rebin_lc(lc, rebin_sec):
+# def rebin_lc(lc, rebin_sec):
+#     extra_bins = len(lc) % rebin_sec
+#     if extra_bins != 0:
+#         lc = lc[:-extra_bins]
+#     new_bins = int(len(lc)/rebin_sec)
+#     new_lc = lc.reshape((new_bins, rebin_sec)).sum(axis=1)
+#     return new_lc
+
+
+def rebin_lc(lc, datetime_arr ,rebin_sec): #lc: counts per second
     extra_bins = len(lc) % rebin_sec
     if extra_bins != 0:
         lc = lc[:-extra_bins]
     new_bins = int(len(lc)/rebin_sec)
     new_lc = lc.reshape((new_bins, rebin_sec)).sum(axis=1)
-    return new_lc
+    new_tm = np.arange(new_bins)*rebin_sec
+
+
+    new_datetime_arr = []
+    for ii in new_tm:
+        new_datetime_arr.append(datetime_arr[int(ii)])
+
+    new_lc = new_lc/rebin_sec #counts per second
+
+    return new_lc, new_datetime_arr
+
 
 
 def generate_spectrogram(spectra, rebin_sec):
