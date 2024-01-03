@@ -5,7 +5,7 @@
 # @File Name: L0_interm.py
 # @Project: solexs_pipeline
 #
-# @Last Modified time: 2023-08-26 08:24:23 am
+# @Last Modified time: 2024-01-03 11:42:25 am
 #####################################################
 
 from .binary_read import read_solexs_binary_data
@@ -121,10 +121,20 @@ class intermediate_directory():
         return gain, offset_data, electronic_sigma, fano
     
     def read_lbt_hk_data(self,lbt_hk_data_file=None): #TODO temporary. assuming electronics box temperature is 0 degrees
-        log.info('Reading LBT HK data.')
-        self.ele_box_temp_SDD1 = np.zeros(self.n_SDD1)
-        self.ele_box_temp_SDD2 = np.zeros(self.n_SDD2)
+        log.info('Reading Analog HK data.')
+        analog_hk_data = getattr(self.solexs_bd, f'analog_hk_data')
+        tmp_ele_box_temp = analog_hk_data.SOLEXS_BASE_TEMP_THR
+        tmp_hk_timestamp = analog_hk_data.hk_utc_timestamp
+        st_time_SDD1 = self.get_start_time(1)
+        st_time_SDD2 = self.get_start_time(2)
+
+        self.ele_box_temp_SDD1 = self.nearest_interp(st_time_SDD1,tmp_hk_timestamp,tmp_ele_box_temp) #np.zeros(self.n_SDD1)
+        self.ele_box_temp_SDD2 = self.nearest_interp(st_time_SDD2,tmp_hk_timestamp,tmp_ele_box_temp) #np.zeros(self.n_SDD2)
     
+    def nearest_interp(self,xi,x,y):
+        idx = np.abs(x - xi[:,None])
+        return y[idx.argmin(axis=1)]
+
     def calc_energy_bins(self,SDD_number):
         log.info(f'Calculating energy bins for SDD{SDD_number}')
         gain, offset_data, electronic_sigma, fano = self.load_bcf_caldb(SDD_number=SDD_number)
@@ -148,11 +158,9 @@ class intermediate_directory():
         Output: In seconds from standard epoch
 
         Use TCT file to get UT in seconds
-        Temporary: using instrument time
         """
-        
-        sdd_data = getattr(self.solexs_bd,f'SDD{SDD_number}')
-        st_time = sdd_data.hdr_data.ref_count/1000 #in seconds
+        pld_header_data = getattr(self.solexs_bd,f'pld_header_SDD{SDD_number}')
+        st_time = pld_header_data.pld_utc_timestamp
 
         return st_time
     
