@@ -5,7 +5,7 @@
 # @File Name: binary_read.py
 # @Project: solexs_pipeline
 
-# @Last Modified time: 2023-12-18 10:55:34 pm
+# @Last Modified time: 2024-01-03 11:32:40 am
 #####################################################
 
 import os
@@ -514,8 +514,8 @@ class analog_hk_data():
             hk_utc_datetime.append(datetime.datetime.strptime(
                 dd[0] + dd[1], '%Y/%m/%d%H:%M:%S:%f'))
             hk_utc_timestamp.append(hk_utc_datetime[-1].timestamp())
-            hk_ele.append(float(dd[2]))
-            hk_det.append(float(dd[3]))
+            hk_det.append(float(dd[2]))
+            hk_ele.append(float(dd[3]))
             hk_rad.append(float(dd[4]))
 
         return hk_utc_datetime, hk_utc_timestamp, hk_ele, hk_det, hk_rad
