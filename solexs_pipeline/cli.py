@@ -40,9 +40,15 @@ def main(input_file,data_type,args=None):
     log.info('Initiating intermediate to L1 data pipeline.')
     # interm_dir_path = interm_dir.output_dir
     l1_dir = L1_directory(interm_dir_paths)
+    l1_pi_file_sdd1, l1_lc_file_sdd1 = l1_dir.create_l1_files(SDD_number=1)
     l1_dir.make_l1_dir()
-    l1_dir.write_l1_files(SDD_number=1)
-    l1_dir.write_l1_files(SDD_number=2)
+    l1_dir.write_l1_files(1, l1_pi_file_sdd1, l1_lc_file_sdd1)
+
+    l1_pi_file_sdd2, l1_lc_file_sdd2 = l1_dir.create_l1_files(SDD_number=2)
+    l1_dir.write_l1_files(2, l1_pi_file_sdd2, l1_lc_file_sdd2)
+    
+    # l1_dir.write_l1_files(SDD_number=1)
+    # l1_dir.write_l1_files(SDD_number=2)
 
     log.info('SoLEXS pipeline executed successfully.')
     return 0

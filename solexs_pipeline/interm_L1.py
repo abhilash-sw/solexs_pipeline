@@ -5,7 +5,7 @@
 # @File Name: interm_L1.py
 # @Project: solexs_pipeline
 #
-# @Last Modified time: 2023-08-29 06:47:11 pm
+# @Last Modified time: 2024-01-19 09:42:58 am
 #####################################################
 
 import numpy as np
@@ -15,6 +15,7 @@ import glob
 import pkg_resources
 from .fits_utils import PHAII, LC
 from .logging import setup_logger
+import datetime
 
 """TODO
 1. Define pi energy bins [DONE]
@@ -38,11 +39,13 @@ class L1_directory():
 
         self.interm_dir_paths = interm_dir_paths
         self.input_filename = os.path.basename(self.interm_dir_paths[0]).split('_interm')[0] #TODO change to generic filename
+        self.output_filename_prefix = 'AL1_SOLEXS_'
         pass
 
     def make_l1_dir(self, output_dir=None, clobber=True):
-        output_dir = os.path.join(os.path.dirname(
-            self.interm_dir_paths[0]), f'{self.input_filename}_L1')  # TODO change to generic filename
+        # output_dir = os.path.join(os.path.dirname(
+            # self.interm_dir_paths[0]), f'{self.input_filename}_L1')  # TODO change to generic filename
+        output_dir = self.output_filename
         log.info(f'Making L1 directory: {output_dir}')
         if os.path.exists(output_dir) and clobber:
             log.warning(f'L1 directory already exist. Removing.')
@@ -112,7 +115,8 @@ class L1_directory():
         nbins = int(86400.0/tbinsize)
         self.nbins_pha = nbins
 
-        tday0 = int(time_solexs[0]/86400.0)*86400.0
+        datetime0 = datetime.datetime.fromtimestamp(time_solexs[0])
+        tday0 =  datetime.datetime(datetime0.year, datetime0.month, datetime0.day).timestamp() #int(time_solexs[0]/86400.0)*86400.0
         t0 = (time_solexs[0]-int((time_solexs[0]-tday0)/tbinsize)*tbinsize)
 
         all_time = np.arange(0, nbins)*tbinsize+t0
@@ -123,6 +127,9 @@ class L1_directory():
             tbin = int((t-tday0)/tbinsize)
             all_pi_spec[tbin,:] = pi_spec[i,:]
         
+        output_filename_day = datetime.datetime.fromtimestamp(time_solexs[0]).strftime('%Y%m%d')
+        self.output_filename = self.output_filename_prefix + output_filename_day
+
         return all_time, all_pi_spec
 
     def allday_lc(self,time_solexs,lc):
@@ -161,7 +168,7 @@ class L1_directory():
     
     def pi_file(self,SDD_number):
         hdus_pha_list = self.load_interm_file(SDD_number, 'pha')
-        filename = hdus_pha_list[0][0].header['filename'] #TODO change to generic filename
+        # filename = hdus_pha_list[0][0].header['filename'] #TODO change to generic filename
 
         pi_spec = np.zeros((0,340))
         for hdus_pha in hdus_pha_list:
@@ -185,13 +192,18 @@ class L1_directory():
         exposure = np.ones(self.nbins_pha,np.int8)
         respfile = np.array([None]*self.nbins_pha)
         
+        filename = self.output_filename + f'_SDD{SDD_number}_L1.pi'
+        self.output_filename_pi = filename
+        
         l1_pi_file = PHAII(filename, all_time, telapse, channel, counts, quality, exposure, respfile)
         return l1_pi_file
     
     def lc_file(self,SDD_number):
         hdus_lc_list = self.load_interm_file(SDD_number, 'lc')
         # TODO change to generic filename
-        filename = hdus_lc_list[0][0].header['filename']
+        # filename = hdus_lc_list[0][0].header['filename']
+        filename = self.output_filename + f'_SDD{SDD_number}_L1.lc'
+        self.output_filename_lc = filename
 
         lc_data = hdus_lc_list[0][2].data
         if len(hdus_lc_list) > 1:
@@ -236,15 +248,17 @@ class L1_directory():
 
         return l1_pi_file, l1_lc_file
     
-    def write_l1_files(self,SDD_number):
+    def write_l1_files(self,SDD_number, l1_pi_file, l1_lc_file):
         log.info(f'Creating L1 files for SDD{SDD_number}')
-        l1_pi_file, l1_lc_file = self.create_l1_files(SDD_number)
+        # l1_pi_file, l1_lc_file = self.create_l1_files(SDD_number)
+        # l1_pi_file = self.l1_pi_file
+        # l1_lc_file = self.l1_lc_file
         sdd_l1_dir = os.path.join(self.output_dir,f'SDD{SDD_number}')
 
-        l1_pi_filename = os.path.join(sdd_l1_dir,f'{self.input_filename}_SDD{SDD_number}_L1.pha')
+        l1_pi_filename = os.path.join(sdd_l1_dir,self.output_filename_pi)#os.path.join(sdd_l1_dir,f'{self.input_filename}_SDD{SDD_number}_L1.pha')
         l1_pi_file.writeto(l1_pi_filename)
         log.info(f'Created PI L1 file: {l1_pi_filename}')
 
-        l1_lc_filename = os.path.join(sdd_l1_dir,f'{self.input_filename}_SDD{SDD_number}_L1.lc')
+        l1_lc_filename = os.path.join(sdd_l1_dir,self.output_filename_lc)#os.path.join(sdd_l1_dir,f'{self.input_filename}_SDD{SDD_number}_L1.lc')
         l1_lc_file.writeto(l1_lc_filename)
         log.info(f'Created LC L1 file: {l1_lc_filename}')
