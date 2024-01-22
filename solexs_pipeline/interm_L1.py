@@ -5,7 +5,7 @@
 # @File Name: interm_L1.py
 # @Project: solexs_pipeline
 #
-# @Last Modified time: 2024-01-19 09:42:58 am
+# @Last Modified time: 2024-01-22 04:11:19 pm
 #####################################################
 
 import numpy as np
@@ -45,7 +45,10 @@ class L1_directory():
     def make_l1_dir(self, output_dir=None, clobber=True):
         # output_dir = os.path.join(os.path.dirname(
             # self.interm_dir_paths[0]), f'{self.input_filename}_L1')  # TODO change to generic filename
-        output_dir = self.output_filename
+        if output_dir is None:
+            output_dir = os.path.curdir
+        
+        output_dir = os.path.join(output_dir,self.output_filename,'L1')
         log.info(f'Making L1 directory: {output_dir}')
         if os.path.exists(output_dir) and clobber:
             log.warning(f'L1 directory already exist. Removing.')
