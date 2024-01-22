@@ -33,8 +33,8 @@ def main(input_file,output_dir,data_type,args=None):
         # Intermediate Directory
         interm_dir = intermediate_directory(filename, input_file_data_type=data_type)
         interm_date = interm_dir.solexs_bd.pld_header_SDD1.pld_utc_datetime[0].strftime('%Y%m%d')
-        interm_output_dir = os.path.join(output_dir,interm_date,'intermediate')
-        interm_dir.make_interm_dir(output_dir=interm_output_dir) #TODO add output_dir = yyyymmdd/intermediate (yyyymmdd from interm_dir.solexs_bd.pld_header_SDD1.pld_utc_datetime[0].strftime('%Y%m%d'))
+        interm_output_dir = os.path.join(output_dir,'AL1_SOLEXS_'+ interm_date,'intermediate')
+        interm_dir.make_interm_dir(output_dir=interm_output_dir)
         interm_dir.write_interm_files(SDD_number=1)
         interm_dir.write_interm_files(SDD_number=2)
 
@@ -45,7 +45,7 @@ def main(input_file,output_dir,data_type,args=None):
     # interm_dir_path = interm_dir.output_dir
     l1_dir = L1_directory(interm_dir_paths)
     l1_pi_file_sdd1, l1_lc_file_sdd1 = l1_dir.create_l1_files(SDD_number=1)
-    l1_dir.make_l1_dir()
+    l1_dir.make_l1_dir(output_dir)
     l1_dir.write_l1_files(1, l1_pi_file_sdd1, l1_lc_file_sdd1)
 
     l1_pi_file_sdd2, l1_lc_file_sdd2 = l1_dir.create_l1_files(SDD_number=2)
