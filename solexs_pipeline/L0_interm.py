@@ -5,7 +5,7 @@
 # @File Name: L0_interm.py
 # @Project: solexs_pipeline
 #
-# @Last Modified time: 2024-01-03 11:42:25 am
+# @Last Modified time: 2024-01-22 04:58:28 pm
 #####################################################
 
 from .binary_read import read_solexs_binary_data
@@ -71,11 +71,11 @@ class intermediate_directory():
         #self.pha_file_SDD2 = self.pha_interm_file(2)
 
     
-    def make_interm_dir(self,input_filename,output_dir=None,clobber=True):
+    def make_interm_dir(self,output_dir=None,clobber=True):
         if output_dir is None:
             output_dir = os.path.curdir
         
-        output_dir = os.path.join(output_dir,f'{input_filename}_interm') #TODO remove extention from inputfilename if required
+        output_dir = os.path.join(output_dir,f'{self.input_filename}_interm') #TODO remove extention from inputfilename if required
         log.info(f'Making intermediate directory: {output_dir}')
         if os.path.exists(output_dir) and clobber:
             log.warning(f'Intermediate directory already exist. Removing.')
