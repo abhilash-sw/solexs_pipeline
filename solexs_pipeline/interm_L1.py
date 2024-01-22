@@ -5,7 +5,7 @@
 # @File Name: interm_L1.py
 # @Project: solexs_pipeline
 #
-# @Last Modified time: 2024-01-22 04:11:19 pm
+# @Last Modified time: 2024-01-22 07:26:05 pm
 #####################################################
 
 import numpy as np
@@ -128,6 +128,8 @@ class L1_directory():
 
         for i, t in enumerate(time_solexs):
             tbin = int((t-tday0)/tbinsize)
+            if tbin >= 86400:
+                break
             all_pi_spec[tbin,:] = pi_spec[i,:]
         
         output_filename_day = datetime.datetime.fromtimestamp(time_solexs[0]).strftime('%Y%m%d')
