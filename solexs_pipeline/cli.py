@@ -10,8 +10,9 @@ log = setup_logger('solexs_pipeline')
 
 @click.command()
 @click.option('-i', '--input_file', help='Input SoLEXS Instrument Data File', multiple=True)
+@click.option('-o', '--output_dir', default=None, show_default=True, help='Output Directory')
 @click.option('-dt', '--data_type', default='L0', show_default=True, help='Raw/SP/L0')
-def main(input_file,data_type,args=None):
+def main(input_file,output_dir,data_type,args=None):
     """Console script for solexs_pipeline."""
     click.echo("SoLEXS pipeline command line interface "
                "solexs_pipeline.cli.main")
@@ -21,6 +22,7 @@ def main(input_file,data_type,args=None):
     # log.addHandler(fh)
     log.info('SoLEXS pipeline command line interface initiated.')
     log.info(f'Input file: {input_file}')
+    log.info(f'Output directory: {output_dir}')
     log.info(f'Data type: {data_type}')
 
     log.info('Initiating L0 to intermediate data pipeline.')
@@ -30,7 +32,9 @@ def main(input_file,data_type,args=None):
 
         # Intermediate Directory
         interm_dir = intermediate_directory(filename, input_file_data_type=data_type)
-        interm_dir.make_interm_dir(filename)
+        interm_date = interm_dir.solexs_bd.pld_header_SDD1.pld_utc_datetime[0].strftime('%Y%m%d')
+        interm_output_dir = os.path.join(output_dir,interm_date,'intermediate')
+        interm_dir.make_interm_dir(output_dir=interm_output_dir) #TODO add output_dir = yyyymmdd/intermediate (yyyymmdd from interm_dir.solexs_bd.pld_header_SDD1.pld_utc_datetime[0].strftime('%Y%m%d'))
         interm_dir.write_interm_files(SDD_number=1)
         interm_dir.write_interm_files(SDD_number=2)
 
