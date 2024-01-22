@@ -10,7 +10,7 @@ log = setup_logger('solexs_pipeline')
 
 @click.command()
 @click.option('-i', '--input_file', help='Input SoLEXS Instrument Data File', multiple=True)
-@click.option('-dt', '--data_type', default='Raw', show_default=True, help='Raw/SP/L0')
+@click.option('-dt', '--data_type', default='L0', show_default=True, help='Raw/SP/L0')
 def main(input_file,data_type,args=None):
     """Console script for solexs_pipeline."""
     click.echo("SoLEXS pipeline command line interface "
