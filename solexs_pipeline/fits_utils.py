@@ -5,7 +5,7 @@
 # @File Name: fits_utils.py
 # @Project: solexs_pipeline
 
-# @Last Modified time: 2023-12-18 10:32:02 pm
+# @Last Modified time: 2024-01-23 12:13:56 pm
 #####################################################
 
 from builtins import str
@@ -601,7 +601,7 @@ class SPECTRUM(FITSExtension):
         telapse,
         channel,
         counts,
-        quality,
+        # quality,
         # grouping,
         exposure,
         # backscale,
@@ -638,7 +638,7 @@ class SPECTRUM(FITSExtension):
             ("SPEC_NUM", np.arange(1, n_spectra + 1, dtype=np.int32)),
             ("CHANNEL", channel),
             ("COUNTS", counts),
-            ("QUALITY", quality),
+            # ("QUALITY", quality),
             # ("BACKSCAL", backscale),
             # ("GROUPING", grouping),
             ("EXPOSURE", exposure),
@@ -676,7 +676,7 @@ class PHAII(FITSFile):
         telapse: np.ndarray,
         channel: np.ndarray,
         counts: np.ndarray,
-        quality: np.ndarray,
+        # quality: np.ndarray,
         # grouping: np.ndarray, # Commenting for time being (693)
         exposure: np.ndarray,
         # backscale: np.ndarray, # Commenting for time being (695)
@@ -721,7 +721,7 @@ class PHAII(FITSFile):
         self._channel = channel #_atleast_2d_with_dtype(channel, np.int16)
         self._counts = counts #_atleast_2d_with_dtype(counts, np.float32) #* 1.0 / u.s
         self._exposure = exposure*u.s #_atleast_1d_with_dtype(exposure, np.int8) * u.s
-        self._quality = quality #_atleast_2d_with_dtype(quality, np.int16)
+        # self._quality = quality #_atleast_2d_with_dtype(quality, np.int16)
         # self._grouping = _atleast_2d_with_dtype(grouping, np.int8)
         # self._backscale = _atleast_1d_with_dtype(backscale, np.int8)
         self._respfile = _atleast_1d_with_dtype(respfile, str)
@@ -757,7 +757,7 @@ class PHAII(FITSFile):
             self._telapse,
             self._channel,
             self._counts,
-            self._quality,
+            # self._quality,
             # self._grouping,
             self._exposure,
             # self._backscale,

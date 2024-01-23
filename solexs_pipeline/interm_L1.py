@@ -5,7 +5,7 @@
 # @File Name: interm_L1.py
 # @Project: solexs_pipeline
 #
-# @Last Modified time: 2024-01-23 11:21:42 am
+# @Last Modified time: 2024-01-23 12:14:19 pm
 #####################################################
 
 import numpy as np
@@ -193,14 +193,15 @@ class L1_directory():
         # assuming integration time is 1 second each
         telapse = np.ones(self.nbins_pha,np.int8)
         counts = all_pi_spec
-        quality = np.array(['None']*self.nbins_pha)#np.zeros(self.nbins_pha,np.int8)
+        # quality = np.array(['None']*self.nbins_pha)#np.zeros(self.nbins_pha,np.int8)
         exposure = np.ones(self.nbins_pha,np.int8)
         respfile = np.array([None]*self.nbins_pha)
         
         filename = self.output_filename + f'_SDD{SDD_number}_L1.pi'
         self.output_filename_pi = filename
         
-        l1_pi_file = PHAII(filename, all_time, telapse, channel, counts, quality, exposure, respfile)
+        # l1_pi_file = PHAII(filename, all_time, telapse, channel, counts, quality, exposure, respfile)
+        l1_pi_file = PHAII(filename, all_time, telapse, channel, counts, exposure, respfile)
         return l1_pi_file
     
     def lc_file(self,SDD_number):
