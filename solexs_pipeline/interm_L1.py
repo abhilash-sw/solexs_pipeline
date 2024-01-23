@@ -5,7 +5,7 @@
 # @File Name: interm_L1.py
 # @Project: solexs_pipeline
 #
-# @Last Modified time: 2024-01-23 12:14:19 pm
+# @Last Modified time: 2024-01-23 02:56:13 pm
 #####################################################
 
 import numpy as np
@@ -128,7 +128,7 @@ class L1_directory():
 
         for i, t in enumerate(time_solexs):
             tbin = int((t-tday0)/tbinsize)
-            if tbin >= 86400: #TODO Currently ignoring next day's data. 
+            if tbin >= nbins: #TODO Currently ignoring next day's data. 
                 break
             all_pi_spec[tbin,:] = pi_spec[i,:]
         
