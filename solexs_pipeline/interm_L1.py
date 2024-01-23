@@ -5,7 +5,7 @@
 # @File Name: interm_L1.py
 # @Project: solexs_pipeline
 #
-# @Last Modified time: 2024-01-23 11:15:01 am
+# @Last Modified time: 2024-01-23 11:21:42 am
 #####################################################
 
 import numpy as np
@@ -193,7 +193,7 @@ class L1_directory():
         # assuming integration time is 1 second each
         telapse = np.ones(self.nbins_pha,np.int8)
         counts = all_pi_spec
-        quality = np.array([None]*self.nbins_pha)#np.zeros(self.nbins_pha,np.int8)
+        quality = np.array(['None']*self.nbins_pha)#np.zeros(self.nbins_pha,np.int8)
         exposure = np.ones(self.nbins_pha,np.int8)
         respfile = np.array([None]*self.nbins_pha)
         
