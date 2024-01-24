@@ -5,7 +5,7 @@
 # @File Name: utils.py
 # @Project: solexs_pipeline
 #
-# @Last Modified time: 2023-12-20 09:12:58 am
+# @Last Modified time: 2024-01-24 07:32:05 am
 #####################################################
 
 import numpy as np
@@ -14,7 +14,9 @@ import tempfile
 import os
 import json
 import datetime
-
+import glob
+from astropy.io import fits
+from .fits_utils import PHAII
 
 # def rebin_lc(lc, rebin_sec):
 #     extra_bins = len(lc) % rebin_sec
@@ -110,3 +112,118 @@ def timestamp2datetime(timestamp_arr):
         datetime_arr.append(datetime.datetime.fromtimestamp(ta))
 
     return datetime_arr
+
+def make_start_stop_time_db(solexs_data_dir):
+    files = glob.glob(os.path.join(solexs_data_dir,'*','*','*','*','*pld')) #2024/01/01/SLX*/*pld
+    files.sort()
+    tmp_files = glob.glob(os.path.join(solexs_data_dir,'*','*','*','*pld')) #2024/01/01/*pld
+    tmp_files.sort()
+
+    files = files + tmp_files
+
+    #reading already existing files
+    fid = open(os.path.join(solexs_data_dir,'files_start_stop_times.txt'),'r')
+    start_stop_data = fid.readlines()
+    fid.close()
+    file_names_old = []
+
+    for i in range(len(start_stop_data)):
+        file_names_old.append(start_stop_data[i].split('\t')[1])
+
+    start_times = []
+    stop_times = []
+    dates = []
+    files_new = []
+
+    for fl in files:
+        if os.path.basename(fl) in file_names_old:
+            continue
+        tmp_d = read_solexs_binary_data(fl,'L0')
+        start_times.append(tmp_d.pld_header_SDD1.pld_utc_datetime[0].isoformat())
+        stop_times.append(tmp_d.pld_header_SDD2.pld_utc_datetime[-1].isoformat())
+        dates.append(tmp_d.pld_header_SDD1.pld_utc_datetime[0].strftime('%Y%m%d'))
+        files_new.append(fl)
+    
+    fid1 = open(os.path.join(solexs_data_dir,'files_start_stop_times.txt'),'a')
+    for i, fl in enumerate(files_new):
+        tmp_line = f'{fl}\t{os.path.basename(fl)}\t{start_times[i]}\t{stop_times[i]}\t{dates[i]}\n'
+        fid1.write(tmp_line)
+
+    fid1.close()
+
+    fid = open(os.path.join(solexs_data_dir,'files_start_stop_times.txt'),'r')
+    start_stop_data = fid.readlines()
+    fid.close()
+
+    datewise_files_dict = {}
+
+    for dt in dates:
+        tmp_datewise_files = []
+        for i in range(len(start_stop_data)):
+            tmp_data = start_stop_data[i].split('\t')
+            if tmp_data[-1][:-1] == dt:
+                tmp_datewise_files.append(tmp_data[0])
+        datewise_files_dict[dt] = tmp_datewise_files
+
+
+# def make_datewise_files_db(solexs_data_dir):
+#     fid = open(os.path.join(solexs_data_dir,'files_start_stop_times.txt'),'r')
+#     start_stop_data = fid.readlines()
+
+#     dates = []
+#     files = []
+
+#     for i in range(len(start_stop_data)):
+
+def convert_pi_340_to_512(pi_file,rsp_file):
+    hdus_pi = fits.open(pi_file)
+
+    hdus_rsp = fits.open(rsp_file)
+    rsp_ene_min = hdus_rsp[1].data['E_MIN']
+    rsp_ene_max = hdus_rsp[1].data['E_MAX']
+
+
+    ch = hdus_pi[1].data['CHANNEL'][0]
+
+    ###
+    pi_ene_min = np.zeros(len(ch))
+    pi_ene_min[:169] = rsp_ene_min[:169] # Correct (double checked)
+
+    j = 170
+    for i in range(169,340):
+        pi_ene_min[i] = rsp_ene_min[j]
+        j = j+2
+    
+    pi_ene_max = np.zeros(len(ch))
+    pi_ene_max[:168] = rsp_ene_max[:168]
+
+    j = 169
+    for i in range(168,340):
+        pi_ene_max[i] = rsp_ene_max[j]
+        j = j+2
+    
+    counts = hdus_pi[1].data['COUNTS']
+
+    nbins_pi = counts.shape[0]
+    counts_512 = np.zeros((nbins_pi,512))
+
+    for i in range(nbins_pi):
+        count = counts[i]
+        count[168:] = count[168:]/2
+        counts_512[i] = np.interp(rsp_ene_min,pi_ene_min,count)
+
+
+    
+
+    filename = hdus_pi[0].header['FILENAME'].split('.')[0] + '_512.pi'
+    all_time = hdus_pi[1].data['TSTART']
+    telapse = hdus_pi[1].data['TELAPSE']
+    ch = np.arange(512)
+    channel = np.tile(ch, (nbins_pi, 1))
+    exposure = hdus_pi[1].data['EXPOSURE']
+    respfile = hdus_pi[1].data['RESPFILE']
+
+    pi_file_512 = PHAII(filename, all_time, telapse, channel, counts_512, exposure, respfile)
+    pi_file_512.writeto(filename)
+
+    
