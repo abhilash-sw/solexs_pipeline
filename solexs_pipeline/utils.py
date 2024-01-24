@@ -5,7 +5,7 @@
 # @File Name: utils.py
 # @Project: solexs_pipeline
 #
-# @Last Modified time: 2024-01-24 07:32:05 am
+# @Last Modified time: 2024-01-24 10:35:44 am
 #####################################################
 
 import numpy as np
@@ -226,4 +226,64 @@ def convert_pi_340_to_512(pi_file,rsp_file):
     pi_file_512 = PHAII(filename, all_time, telapse, channel, counts_512, exposure, respfile)
     pi_file_512.writeto(filename)
 
+
+def solexs_genspec(pi_file_512,tstart,tstop,outfile): # times in seconds since 2017,1,1
+    spec_file = pi_file_512
+    hdu1 = fits.open(spec_file)
+    hdu=fits.BinTableHDU.from_columns(hdu1[1].columns)
+
+    data=hdu.data
+
+    time_solexs = data['TSTART']
+    # tbinsize=(data['TSTOP'][0]-data['TSTART'][0])
     
+    exposure=data['EXPOSURE']
+
+    inds = (time_solexs >= tstart) & (time_solexs < tstop)
+
+    data_f = data[inds]
+
+    channel = data_f[0][3]
+    n_ch = len(channel)
+    spec_data = np.zeros(n_ch)
+    stat_err = np.zeros(n_ch)
+    sys_err = np.zeros(n_ch)
+    exposure = 0
+
+    for di in data_f:
+        spec_data = spec_data + di[4]
+        stat_err = stat_err + np.sqrt(di[4])
+        sys_err = sys_err
+        exposure = exposure + di[5]
+
+    # writing file
+    hdu_list = []
+    primary_hdu = fits.PrimaryHDU()
+                                    
+    hdu_list.append(primary_hdu)
+
+    fits_columns = []
+    col1 = fits.Column(name='CHANNEL',format='J',array=channel)
+    col2 = fits.Column(name='COUNTS',format='E',array=spec_data)
+    col3 = fits.Column(name='STAT_ERR',format='E',array=stat_err)
+    col4 = fits.Column(name='SYS_ERR',format='E',array=sys_err)
+
+    fits_columns.append(col1)
+    fits_columns.append(col2)
+    fits_columns.append(col3)
+    fits_columns.append(col4)
+
+    hdu_pha = fits.BinTableHDU.from_columns(fits.ColDefs(fits_columns))
+    hdu_pha.name = 'SPECTRUM'
+                                                                       
+    hdu_list.append(hdu_pha)
+                                                                       
+    _hdu_list = fits.HDUList(hdus=hdu_list)
+
+    tstart_dt = datetime.datetime.fromtimestamp(tstart)
+    tstop_dt = datetime.datetime.fromtimestamp(tstop)
+
+    _hdu_list[1].header.set('TSTART',tstart_dt.isoformat())
+    _hdu_list[1].header.set('TSTOP',tstop_dt.isoformat())
+    _hdu_list[1].header.set('EXPOSURE',f'{exposure:.2f}')
+    _hdu_list.writeto(f'{outfile}.pha')
