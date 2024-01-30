@@ -5,7 +5,7 @@
 # @File Name: utils.py
 # @Project: solexs_pipeline
 #
-# @Last Modified time: 2024-01-24 10:35:44 am
+# @Last Modified time: 2024-01-30 08:07:13 am
 #####################################################
 
 import numpy as np
@@ -252,10 +252,12 @@ def solexs_genspec(pi_file_512,tstart,tstop,outfile): # times in seconds since 2
 
     for di in data_f:
         spec_data = spec_data + di[4]
-        stat_err = stat_err + np.sqrt(di[4])
-        sys_err = sys_err
+        # stat_err = stat_err + np.sqrt(di[4])
+        # sys_err = sys_err
         exposure = exposure + di[5]
 
+    stat_err = np.sqrt(spec_data)
+    
     # writing file
     hdu_list = []
     primary_hdu = fits.PrimaryHDU()
