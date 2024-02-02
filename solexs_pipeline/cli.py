@@ -12,7 +12,7 @@ log = setup_logger('solexs_pipeline')
 @click.option('-i', '--input_file', help='Input SoLEXS Instrument Data File', multiple=True)
 @click.option('-o', '--output_dir', default=None, show_default=True, help='Output Directory')
 @click.option('-dt', '--data_type', default='L0', show_default=True, help='Raw/SP/L0')
-@click.option('-sdd', '--SDD', default='12', show_default=True, help='1/2/12')
+@click.option('-s', '--SDD', default='12', show_default=True, help='1/2/12')
 def main(input_file,output_dir,data_type,SDD,args=None):
     """Console script for solexs_pipeline."""
     click.echo("SoLEXS pipeline command line interface "
