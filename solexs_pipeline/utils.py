@@ -5,7 +5,7 @@
 # @File Name: utils.py
 # @Project: solexs_pipeline
 #
-# @Last Modified time: 2024-01-30 08:07:13 am
+# @Last Modified time: 2024-02-02 08:46:12 am
 #####################################################
 
 import numpy as np
@@ -166,6 +166,20 @@ def make_start_stop_time_db(solexs_data_dir):
         datewise_files_dict[dt] = tmp_datewise_files
 
 
+def run_pipeline(pld_files_list,output_dir,sdd='12'):
+    cmd = 'solexs_pipeline'
+    for pld_file in pld_files_list:
+        cmd = cmd + f' -i {pld_file}'
+    
+    cmd = cmd + f' -o {output_dir} -dt L0 -sdd {sdd}'
+    os.system(cmd)
+
+def run_pipeline_batch(datewise_files_dict,output_dir,sdd='12'):
+    for dt in datewise_files_dict.keys():
+        if os.path.isdir(f'AL1_SOLEXS_{dt}'):
+            continue
+        run_pipeline(datewise_files_dict[dt],output_dir,sdd)
+
 # def make_datewise_files_db(solexs_data_dir):
 #     fid = open(os.path.join(solexs_data_dir,'files_start_stop_times.txt'),'r')
 #     start_stop_data = fid.readlines()
@@ -288,4 +302,7 @@ def solexs_genspec(pi_file_512,tstart,tstop,outfile): # times in seconds since 2
     _hdu_list[1].header.set('TSTART',tstart_dt.isoformat())
     _hdu_list[1].header.set('TSTOP',tstop_dt.isoformat())
     _hdu_list[1].header.set('EXPOSURE',f'{exposure:.2f}')
+
+    _hdu_list[0].header.set('TELESCOP','AL1')
+    _hdu_list[0].header.set('INSTRUME','SoLEXS')
     _hdu_list.writeto(f'{outfile}.pha')
