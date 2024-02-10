@@ -5,7 +5,7 @@
 # @File Name: interm_L1.py
 # @Project: solexs_pipeline
 #
-# @Last Modified time: 2024-02-10 08:30:59 am
+# @Last Modified time: 2024-02-10 04:15:49 pm
 #####################################################
 
 import numpy as np
@@ -158,7 +158,8 @@ class L1_directory():
         tbinsize = 1  # second
         nbins = int(86400.0/tbinsize)
 
-        tday0 = int(time_solexs[0]/86400.0)*86400.0
+        datetime0 = datetime.datetime.fromtimestamp(time_solexs[0])
+        tday0 =  datetime.datetime(datetime0.year, datetime0.month, datetime0.day).timestamp() #int(time_solexs[0]/86400.0)*86400.0
         t0 = (time_solexs[0]-int((time_solexs[0]-tday0)/tbinsize)*tbinsize)
 
         all_time = np.arange(0, nbins)*tbinsize+t0
@@ -173,7 +174,7 @@ class L1_directory():
     
     def pi_file(self,SDD_number):
         hdus_pha_list = self.load_interm_file(SDD_number, 'pha')
-        # filename = hdus_pha_list[0][0].header['filename'] #TODO change to generic filename
+        # filename = hdus_pha_list[0][0].header['filename']
 
         pi_spec = np.zeros((0,340))
         for hdus_pha in hdus_pha_list:
