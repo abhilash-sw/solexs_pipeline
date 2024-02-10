@@ -5,7 +5,7 @@
 # @File Name: L0_interm.py
 # @Project: solexs_pipeline
 #
-# @Last Modified time: 2024-01-22 04:58:28 pm
+# @Last Modified time: 2024-02-10 04:11:04 pm
 #####################################################
 
 from .binary_read import read_solexs_binary_data
@@ -188,6 +188,9 @@ class intermediate_directory():
         hk_dict = sdd_data.hdr_data.__dict__
         hk_colnames = []
         hk_arr = []
+        st_time = self.get_start_time(SDD_number=SDD_number)
+        hk_dict['TIME'] = st_time
+        hk_colnames = np.append(hk_colnames,'TIME')
 
         for colname in hk_dict.keys():
             hk_colnames.append(colname)
@@ -208,7 +211,8 @@ class intermediate_directory():
     
     def lc_interm_file(self,SDD_number):
         sdd_data = getattr(self.solexs_bd,f'SDD{SDD_number}')
-        tm = sdd_data.hdr_data.ref_count/1000
+        # tm = sdd_data.hdr_data.ref_count/1000
+        st_time = self.get_start_time(SDD_number=SDD_number)
         rate1 = sdd_data.temporal_data.low_sec
         rate2 = sdd_data.temporal_data.med_sec
         rate3 = sdd_data.temporal_data.high_sec
@@ -216,7 +220,7 @@ class intermediate_directory():
         # rate = np.vstack((rate1, rate2, rate3, rate_all)).T
         lower_thresh = sdd_data.hdr_data.timing_channel_thresh_lower
         higher_thresh = sdd_data.hdr_data.timing_channel_thresh_higher
-        lc_file = LC_INTERM(f'{self.input_filename}_SDD{SDD_number}',tm,rate1,rate2,rate3,rate_all, lower_thresh, higher_thresh)
+        lc_file = LC_INTERM(f'{self.input_filename}_SDD{SDD_number}',st_time,rate1,rate2,rate3,rate_all, lower_thresh, higher_thresh)
 
         return lc_file
     
