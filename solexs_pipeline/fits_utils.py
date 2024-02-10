@@ -5,7 +5,7 @@
 # @File Name: fits_utils.py
 # @Project: solexs_pipeline
 
-# @Last Modified time: 2024-01-23 12:13:56 pm
+# @Last Modified time: 2024-02-10 08:30:36 am
 #####################################################
 
 from builtins import str
@@ -686,6 +686,7 @@ class PHAII(FITSFile):
         sys_err: Optional[np.ndarray] = None,
         stat_err: Optional[np.ndarray] = None,
         is_poisson: bool = False,
+        filter_sdd = None
     ):
         """
 
@@ -774,6 +775,7 @@ class PHAII(FITSFile):
         spectrum_extension.hdu.header.set("TELESCOP", 'AL1')
         spectrum_extension.hdu.header.set("INSTRUME", 'SoLEXS')
         spectrum_extension.hdu.header.set("DETCHANS", len(self._channel[0]))
+        spectrum_extension.hdu.header.set("FILTER", filter_sdd)
 
         super(PHAII, self).__init__(fits_extensions=[spectrum_extension])
 
@@ -1424,6 +1426,7 @@ class LC(FITSFile):
         minchan: np.ndarray,
         maxchan: np.ndarray,
         is_poisson: bool = False,
+        filter_sdd = None,
     ):
         """
 
@@ -1484,6 +1487,7 @@ class LC(FITSFile):
         rate_extension.hdu.header.set("TELESCOP", 'AL1')
         rate_extension.hdu.header.set("INSTRUME", 'SoLEXS')
         rate_extension.hdu.header.set("NUMBAND", '4')
+        rate_extension.hdu.header.set("FILTER", filter_sdd)
 
         super(LC, self).__init__(
             fits_extensions=[eneband_extension, rate_extension])

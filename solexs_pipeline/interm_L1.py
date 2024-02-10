@@ -5,7 +5,7 @@
 # @File Name: interm_L1.py
 # @Project: solexs_pipeline
 #
-# @Last Modified time: 2024-01-23 02:56:13 pm
+# @Last Modified time: 2024-02-10 08:30:59 am
 #####################################################
 
 import numpy as np
@@ -201,7 +201,7 @@ class L1_directory():
         self.output_filename_pi = filename
         
         # l1_pi_file = PHAII(filename, all_time, telapse, channel, counts, quality, exposure, respfile)
-        l1_pi_file = PHAII(filename, all_time, telapse, channel, counts, exposure, respfile)
+        l1_pi_file = PHAII(filename, all_time, telapse, channel, counts, exposure, respfile,filter_sdd=f'SDD{SDD_number}')
         return l1_pi_file
     
     def lc_file(self,SDD_number):
@@ -239,7 +239,7 @@ class L1_directory():
         #TODO Energy-channel calibration for temporal band
 
         l1_lc_file = LC(f'{filename}_SDD{SDD_number}', all_time, lc_low,
-                        lc_med, lc_high, lc_all, minchan, maxchan)
+                        lc_med, lc_high, lc_all, minchan, maxchan,filter_sdd=f'SDD{SDD_number}')
         
         return l1_lc_file
         
