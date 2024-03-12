@@ -5,7 +5,7 @@
 # @File Name: L0_interm.py
 # @Project: solexs_pipeline
 #
-# @Last Modified time: 2024-02-10 04:11:04 pm
+# @Last Modified time: 2024-03-12 03:57:36 pm
 #####################################################
 
 from .binary_read import read_solexs_binary_data
@@ -190,7 +190,7 @@ class intermediate_directory():
         hk_arr = []
         st_time = self.get_start_time(SDD_number=SDD_number)
         hk_dict['TIME'] = st_time
-        hk_colnames = np.append(hk_colnames,'TIME')
+        hk_colnames.append('TIME')
 
         for colname in hk_dict.keys():
             hk_colnames.append(colname)
