@@ -5,7 +5,7 @@
 # @File Name: interm_L1.py
 # @Project: solexs_pipeline
 #
-# @Last Modified time: 2024-03-13 07:20:01 am
+# @Last Modified time: 2024-03-13 08:23:24 am
 #####################################################
 
 import numpy as np
@@ -158,7 +158,7 @@ class L1_directory():
         tbinsize = 1  # second
         nbins = int(86400.0/tbinsize)
 
-        datetime0 = datetime.datetime.fromtimestamp(time_solexs[0])
+        datetime0 = datetime.datetime.fromtimestamp(int(time_solexs[0]))
         tday0 =  datetime.datetime(datetime0.year, datetime0.month, datetime0.day).timestamp() #int(time_solexs[0]/86400.0)*86400.0
         t0 = (time_solexs[0]-int((time_solexs[0]-tday0)/tbinsize)*tbinsize)
 
