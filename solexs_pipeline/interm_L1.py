@@ -5,7 +5,7 @@
 # @File Name: interm_L1.py
 # @Project: solexs_pipeline
 #
-# @Last Modified time: 2024-03-13 08:23:24 am
+# @Last Modified time: 2024-03-13 10:45:43 am
 #####################################################
 
 import numpy as np
@@ -168,6 +168,8 @@ class L1_directory():
 
         for i, t in enumerate(time_solexs):
             tbin = int((t-tday0)/tbinsize)
+            if tbin >= nbins: #TODO Currently ignoring next day's data. 
+                break
             all_lc[tbin] = lc[i]
 
         return all_time, all_lc
