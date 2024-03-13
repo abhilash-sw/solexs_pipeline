@@ -5,7 +5,7 @@
 # @File Name: fits_utils.py
 # @Project: solexs_pipeline
 
-# @Last Modified time: 2024-02-10 08:30:36 am
+# @Last Modified time: 2024-03-13 09:22:00 am
 #####################################################
 
 from builtins import str
@@ -1271,7 +1271,7 @@ class LC_INTERM(FITSFile):
         # extension builder
 
         self._filename = filename
-        self._time = _atleast_1d_with_dtype(tm, np.float32) * u.s
+        self._time = tm #_atleast_1d_with_dtype(tm, np.float32) * u.s
         # self._telapse = _atleast_1d_with_dtype(telapse, np.float32) * u.s
         # self._channel = _atleast_2d_with_dtype(channel, np.int16)
         self._counts_low = _atleast_1d_with_dtype(counts_low, np.int32) #* 1.0 / u.s
@@ -1453,7 +1453,7 @@ class LC(FITSFile):
         # extension builder
 
         self._filename = filename
-        self._time = _atleast_1d_with_dtype(tm, np.float32) * u.s
+        self._time = tm #_atleast_1d_with_dtype(tm, np.float32) * u.s
         # self._telapse = _atleast_1d_with_dtype(telapse, np.float32) * u.s
         # self._channel = _atleast_2d_with_dtype(channel, np.int16)
         self._counts_low = _atleast_1d_with_dtype(
