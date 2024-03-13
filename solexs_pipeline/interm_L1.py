@@ -5,7 +5,7 @@
 # @File Name: interm_L1.py
 # @Project: solexs_pipeline
 #
-# @Last Modified time: 2024-02-10 04:15:49 pm
+# @Last Modified time: 2024-03-13 07:20:01 am
 #####################################################
 
 import numpy as np
@@ -111,8 +111,8 @@ class L1_directory():
         time_solexs = time_solexs[sort_i]
         pi_spec = pi_spec[sort_i, :]
 
-        assert (time_solexs[-1] - time_solexs[0]
-                ) < 86400.0  # TODO Exit gracefully
+        # assert (time_solexs[-1] - time_solexs[0]
+        #         ) < 86400.0  # TODO Exit gracefully
 
         tbinsize = 1 #second
         nbins = int(86400.0/tbinsize)
@@ -152,8 +152,8 @@ class L1_directory():
         time_solexs = time_solexs[sort_i]
         lc = lc[sort_i]
 
-        assert (time_solexs[-1] - time_solexs[0]
-                ) < 86400.0  # TODO Exit gracefully
+        # assert (time_solexs[-1] - time_solexs[0]
+        #         ) < 86400.0  # TODO Exit gracefully
 
         tbinsize = 1  # second
         nbins = int(86400.0/tbinsize)
