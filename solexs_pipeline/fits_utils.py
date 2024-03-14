@@ -5,7 +5,7 @@
 # @File Name: fits_utils.py
 # @Project: solexs_pipeline
 
-# @Last Modified time: 2024-03-14 06:39:02 pm
+# @Last Modified time: 2024-03-14 07:52:21 pm
 #####################################################
 
 from builtins import str
@@ -1587,4 +1587,11 @@ class GTI(FITSFile):
             ("FILENAME",  self._filename            , 'Name of file'),
             ("CONTENT" , 'GOOD TIME INTERVAL' , 'File content'),
             ("DATE"    ,  datetime.datetime.now().strftime("%Y-%m-%d") , 'Creation Date'),
+        )
 
+        primary_header = self._hdu_list[0].header
+
+        for k in _PRIMARY_HEADER_KEYWORDS:
+            primary_header.append(k)
+
+        self._hdu_list[0].header = primary_header
