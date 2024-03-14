@@ -5,7 +5,7 @@
 # @File Name: L0_interm.py
 # @Project: solexs_pipeline
 #
-# @Last Modified time: 2024-03-14 09:05:39 am
+# @Last Modified time: 2024-03-14 06:51:50 pm
 #####################################################
 
 from .binary_read import read_solexs_binary_data
@@ -207,8 +207,8 @@ class intermediate_directory():
         # Add LBT HK Data 
         ele_box_temp_tmp = getattr(self,f'ele_box_temp_SDD{SDD_number}')
         # hk_arr = np.vstack((hk_arr,ele_box_temp_tmp))
-        hk_dict['Electronic Box Temperature'] = ele_box_temp_tmp
-        hk_colnames = np.append(hk_colnames,'Electronic Box Temperature')
+        hk_dict['Electronic_Box_Temperature'] = ele_box_temp_tmp
+        hk_colnames = np.append(hk_colnames,'Electronic_Box_Temperature')
 
         hk_file = HOUSEKEEPING(f'{self.input_filename}_SDD{SDD_number}',hk_dict,hk_colnames) #TODO Some problem with data type of ref counter
 
