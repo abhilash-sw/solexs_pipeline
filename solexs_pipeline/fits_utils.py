@@ -5,7 +5,7 @@
 # @File Name: fits_utils.py
 # @Project: solexs_pipeline
 
-# @Last Modified time: 2024-03-14 07:52:21 pm
+# @Last Modified time: 2024-03-14 08:21:53 pm
 #####################################################
 
 from builtins import str
@@ -113,6 +113,10 @@ class FITSFile(object):
         return self._hdu_list.index_of(key)
 
     index_of.__doc__ = fits.HDUList.index_of.__doc__
+
+    def update_primary_comments(self, comment_list):
+        for cmt in comment_list:
+            self._hdu_list[0].header['COMMENT'] = cmt
 
 
 class FITSExtension(object):
