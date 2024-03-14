@@ -5,7 +5,7 @@
 # @File Name: interm_L1.py
 # @Project: solexs_pipeline
 #
-# @Last Modified time: 2024-03-13 10:45:43 am
+# @Last Modified time: 2024-03-14 03:23:14 pm
 #####################################################
 
 import numpy as np
@@ -198,7 +198,7 @@ class L1_directory():
         counts = all_pi_spec
         # quality = np.array(['None']*self.nbins_pha)#np.zeros(self.nbins_pha,np.int8)
         exposure = np.ones(self.nbins_pha,np.int8)
-        respfile = np.array([None]*self.nbins_pha)
+        respfile = np.array([f'solexs_gaussian_SDD{SDD_number}_512.rsp']*self.nbins_pha) #np.array([None]*self.nbins_pha) 
         
         filename = self.output_filename + f'_SDD{SDD_number}_L1.pi'
         self.output_filename_pi = filename
