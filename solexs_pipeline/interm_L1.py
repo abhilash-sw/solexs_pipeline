@@ -5,7 +5,7 @@
 # @File Name: interm_L1.py
 # @Project: solexs_pipeline
 #
-# @Last Modified time: 2024-03-14 07:45:48 pm
+# @Last Modified time: 2024-03-14 08:05:41 pm
 #####################################################
 
 import numpy as np
@@ -268,7 +268,7 @@ class L1_directory():
         gti_flag = np.ones(len(time_solexs))
         
         for i, tmp_key in enumerate(filterdata_keys):
-            tmp_data = hk_data[tmp_key]
+            tmp_data = hk_data[tmp_key] #TODO use moving average instead https://stackoverflow.com/questions/14313510/how-to-calculate-rolling-moving-average-using-python-numpy-scipy
             tmp_flag = (tmp_data>=filterdata[i,0]) & (tmp_data<=filterdata[i,1])
             gti_flag = gti_flag * tmp_flag
 
