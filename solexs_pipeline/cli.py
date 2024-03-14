@@ -51,22 +51,22 @@ def main(input_file,output_dir,data_type,sdd,args=None):
     # interm_dir_path = interm_dir.output_dir
     l1_dir = L1_directory(interm_dir_paths)
     if sdd=='12':
-        l1_pi_file_sdd1, l1_lc_file_sdd1 = l1_dir.create_l1_files(SDD_number=1)
+        l1_pi_file_sdd1, l1_lc_file_sdd1, l1_gti_file_sdd1 = l1_dir.create_l1_files(SDD_number=1)
         l1_dir.make_l1_dir(output_dir)
-        l1_dir.write_l1_files(1, l1_pi_file_sdd1, l1_lc_file_sdd1)
+        l1_dir.write_l1_files(1, l1_pi_file_sdd1, l1_lc_file_sdd1, l1_gti_file_sdd1)
 
-        l1_pi_file_sdd2, l1_lc_file_sdd2 = l1_dir.create_l1_files(SDD_number=2)
-        l1_dir.write_l1_files(2, l1_pi_file_sdd2, l1_lc_file_sdd2)
+        l1_pi_file_sdd2, l1_lc_file_sdd2, l1_gti_file_sdd2 = l1_dir.create_l1_files(SDD_number=2)
+        l1_dir.write_l1_files(2, l1_pi_file_sdd2, l1_lc_file_sdd2, l1_gti_file_sdd2)
     
     if sdd=='1':
-        l1_pi_file_sdd1, l1_lc_file_sdd1 = l1_dir.create_l1_files(SDD_number=1)
+        l1_pi_file_sdd1, l1_lc_file_sdd1, l1_gti_file_sdd1 = l1_dir.create_l1_files(SDD_number=1)
         l1_dir.make_l1_dir(output_dir)
-        l1_dir.write_l1_files(1, l1_pi_file_sdd1, l1_lc_file_sdd1)
+        l1_dir.write_l1_files(1, l1_pi_file_sdd1, l1_lc_file_sdd1, l1_gti_file_sdd1)
 
     if sdd=='2':
-        l1_pi_file_sdd2, l1_lc_file_sdd2 = l1_dir.create_l1_files(SDD_number=2)
+        l1_pi_file_sdd2, l1_lc_file_sdd2, l1_gti_file_sdd2 = l1_dir.create_l1_files(SDD_number=2)
         l1_dir.make_l1_dir(output_dir)
-        l1_dir.write_l1_files(2, l1_pi_file_sdd2, l1_lc_file_sdd2)
+        l1_dir.write_l1_files(2, l1_pi_file_sdd2, l1_lc_file_sdd2, l1_gti_file_sdd2)
 
 
     # l1_dir.write_l1_files(SDD_number=1)

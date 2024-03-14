@@ -5,7 +5,7 @@
 # @File Name: interm_L1.py
 # @Project: solexs_pipeline
 #
-# @Last Modified time: 2024-03-14 03:24:22 pm
+# @Last Modified time: 2024-03-14 07:45:48 pm
 #####################################################
 
 import numpy as np
@@ -13,7 +13,7 @@ from astropy.io import fits
 import os
 import glob
 import pkg_resources
-from .fits_utils import PHAII, LC
+from .fits_utils import PHAII, LC, GTI
 from .logging import setup_logger
 import datetime
 
@@ -29,7 +29,8 @@ import datetime
 log = setup_logger(__name__)
 CPF_DIR = pkg_resources.resource_filename(
     'solexs_pipeline', 'CALDB/aditya-l1/solexs/data/cpf')
-
+BCF_DIR = pkg_resources.resource_filename(
+    'solexs_pipeline', 'CALDB/aditya-l1/solexs/data/bcf')
 
 class L1_directory():
 
@@ -247,17 +248,58 @@ class L1_directory():
         return l1_lc_file
         
 
-    def calc_gti(self,SDD_number): # Not Implemented #TODO
+    def gti_file(self,SDD_number): # Not Implemented #TODO
         log.info(f'Calculating GTI for SDD{SDD_number}')
-        pass 
+        filterfile = os.path.join(BCF_DIR,'gti_filterfile',f'SDD{SDD_number}_filterfile')
+        log.info(f'Reading filterfile for GTI calculations: {filterfile}')
+        filterdata = np.loadtxt(filterfile,usecols=[1,2])
+        filterdata_keys = np.loadtxt(filterfile,usecols=[0],dtype=str)
 
+        hdus_hk_list = self.load_interm_file(SDD_number, 'hk')
+
+        hk_data = hdus_hk_list[0][1].data
+        if len(hdus_hk_list) > 1:
+            for hdus_hk in hdus_hk_list[1:]:
+                tmp_hk_data = hdus_hk[1].data
+                hk_data = np.append(hk_data,tmp_hk_data)
+            
+        time_solexs = hk_data['TIME']
+
+        gti_flag = np.ones(len(time_solexs))
+        
+        for i, tmp_key in enumerate(filterdata_keys):
+            tmp_data = hk_data[tmp_key]
+            tmp_flag = (tmp_data>=filterdata[i,0]) & (tmp_data<=filterdata[i,1])
+            gti_flag = gti_flag * tmp_flag
+
+        gti_start_ind = []
+
+        if gti_flag[0]==1:
+            gti_start_ind.append(0)
+        
+        gti_start_ind = gti_start_ind + list(np.where(np.diff(gti_flag)==1)[0])
+        gti_end_ind = list(np.where(np.diff(gti_flag)==-1)[0])        
+
+        if gti_flag[-1]==1:
+            gti_end_ind.append(-1)
+        
+        gti_start_time = time_solexs[gti_start_ind]
+        gti_end_time = time_solexs[gti_end_ind]
+
+        filename = self.output_filename + f'_SDD{SDD_number}_L1.gti'
+        self.output_filename_gti = filename
+
+        gti_file = GTI(filename, gti_start_time, gti_end_time)
+        return gti_file
+        
     def create_l1_files(self,SDD_number):
         l1_pi_file = self.pi_file(SDD_number)
         l1_lc_file = self.lc_file(SDD_number)
+        l1_gti_file = self.gti_file(SDD_number)
 
-        return l1_pi_file, l1_lc_file
+        return l1_pi_file, l1_lc_file, l1_gti_file
     
-    def write_l1_files(self,SDD_number, l1_pi_file, l1_lc_file):
+    def write_l1_files(self,SDD_number, l1_pi_file, l1_lc_file, l1_gti_file):
         log.info(f'Creating L1 files for SDD{SDD_number}')
         # l1_pi_file, l1_lc_file = self.create_l1_files(SDD_number)
         # l1_pi_file = self.l1_pi_file
@@ -271,3 +313,7 @@ class L1_directory():
         l1_lc_filename = os.path.join(sdd_l1_dir,self.output_filename_lc)#os.path.join(sdd_l1_dir,f'{self.input_filename}_SDD{SDD_number}_L1.lc')
         l1_lc_file.writeto(l1_lc_filename)
         log.info(f'Created LC L1 file: {l1_lc_filename}')
+
+        l1_gti_filename = os.path.join(sdd_l1_dir,self.output_filename_gti)
+        l1_gti_file.writeto(l1_gti_filename)
+        log.info(f'Created GTI L1 file: {l1_gti_filename}')
