@@ -5,7 +5,7 @@
 # @File Name: interm_L1.py
 # @Project: solexs_pipeline
 #
-# @Last Modified time: 2024-03-14 08:05:41 pm
+# @Last Modified time: 2024-03-14 08:26:20 pm
 #####################################################
 
 import numpy as np
@@ -64,6 +64,7 @@ class L1_directory():
 
     def load_interm_file(self,SDD_number,file_type): #file_type -> pha/lc/hk
         hdus_list = []
+        filename_list = []
         for interm_dir_path in self.interm_dir_paths:
             file_path = os.path.join(interm_dir_path,f'SDD{SDD_number}',f'*.{file_type}')
             file_name = glob.glob(file_path)
@@ -73,7 +74,8 @@ class L1_directory():
             log.info(f'Loading intermediate data file: {file_name[0]}')
             hdus = fits.open(file_name[0])
             hdus_list.append(hdus)
-        return hdus_list
+            filename_list.append(os.path.basename(file_name[0]))
+        return hdus_list, filename_list
     
     def rebin_pha_to_pi(self,SDD_number,hdus_pha):
         log.info(f'Rebinning from PHA to PI energy bins for SDD{SDD_number}.')
@@ -176,7 +178,7 @@ class L1_directory():
         return all_time, all_lc
     
     def pi_file(self,SDD_number):
-        hdus_pha_list = self.load_interm_file(SDD_number, 'pha')
+        hdus_pha_list, pha_filename_list = self.load_interm_file(SDD_number, 'pha')
         # filename = hdus_pha_list[0][0].header['filename']
 
         pi_spec = np.zeros((0,340))
@@ -206,10 +208,17 @@ class L1_directory():
         
         # l1_pi_file = PHAII(filename, all_time, telapse, channel, counts, quality, exposure, respfile)
         l1_pi_file = PHAII(filename, all_time, telapse, channel, counts, exposure, respfile,filter_sdd=f'SDD{SDD_number}')
+
+        filename_list_comment = ['PHA Files used:']
+        for phaf in pha_filename_list:
+            filename_list_comment.append(phaf)
+        
+        l1_pi_file.update_primary_comments(filename_list_comment)
+
         return l1_pi_file
     
     def lc_file(self,SDD_number):
-        hdus_lc_list = self.load_interm_file(SDD_number, 'lc')
+        hdus_lc_list, lc_filename_list = self.load_interm_file(SDD_number, 'lc')
         # TODO change to generic filename
         # filename = hdus_lc_list[0][0].header['filename']
         filename = self.output_filename + f'_SDD{SDD_number}_L1.lc'
@@ -245,6 +254,12 @@ class L1_directory():
         l1_lc_file = LC(f'{filename}_SDD{SDD_number}', all_time, lc_low,
                         lc_med, lc_high, lc_all, minchan, maxchan,filter_sdd=f'SDD{SDD_number}')
         
+        filename_list_comment = ['LC Files used:']
+        for lcf in lc_filename_list:
+            filename_list_comment.append(lcf)
+        
+        l1_lc_file.update_primary_comments(filename_list_comment)
+        
         return l1_lc_file
         
 
@@ -255,7 +270,7 @@ class L1_directory():
         filterdata = np.loadtxt(filterfile,usecols=[1,2])
         filterdata_keys = np.loadtxt(filterfile,usecols=[0],dtype=str)
 
-        hdus_hk_list = self.load_interm_file(SDD_number, 'hk')
+        hdus_hk_list, hk_filename_list = self.load_interm_file(SDD_number, 'hk')
 
         hk_data = hdus_hk_list[0][1].data
         if len(hdus_hk_list) > 1:
@@ -290,6 +305,13 @@ class L1_directory():
         self.output_filename_gti = filename
 
         gti_file = GTI(filename, gti_start_time, gti_end_time)
+
+        filename_list_comment = ['HK Files used:']
+        for hkf in hk_filename_list:
+            filename_list_comment.append(hkf)
+        
+        gti_file.update_primary_comments(filename_list_comment)
+
         return gti_file
         
     def create_l1_files(self,SDD_number):
