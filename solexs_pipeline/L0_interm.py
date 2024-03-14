@@ -5,7 +5,7 @@
 # @File Name: L0_interm.py
 # @Project: solexs_pipeline
 #
-# @Last Modified time: 2024-03-14 06:51:50 pm
+# @Last Modified time: 2024-03-14 07:56:01 pm
 #####################################################
 
 from .binary_read import read_solexs_binary_data
@@ -158,7 +158,7 @@ class intermediate_directory():
         return energy_bins_mat
     
     def get_start_time(self,SDD_number):
-        log.info('Calculating start time using TCT file.')
+        log.info('Calculating start time using PLD Header.')
         """
         Output: In seconds from standard epoch
 
