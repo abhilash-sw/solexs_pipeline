@@ -5,7 +5,7 @@
 # @File Name: fits_utils.py
 # @Project: solexs_pipeline
 
-# @Last Modified time: 2024-03-13 09:22:00 am
+# @Last Modified time: 2024-03-14 06:39:02 pm
 #####################################################
 
 from builtins import str
@@ -1516,3 +1516,75 @@ class LC(FITSFile):
             primary_header.append(k)
 
         self._hdu_list[0].header = primary_header
+
+class STDGTI(FITSExtension):
+
+    _HEADER_KEYWORDS = (
+        ("EXTNAME", "STDGTI", "Extension name"),
+        ("HDUCLASS", "OGIP    ", "format conforms to OGIP standard"),
+        ("HDUVERS", "1.1.0   ", "Version of format (OGIP memo CAL/GEN/92-002a)"),
+        (
+            "HDUDOC",
+            "OGIP memos 93-003 & 94-003",
+            "Documents describing the format",
+        ),
+        ("HDUVERS1", "1.0.0   ", "Obsolete - included for backwards compatibility"),
+        ("HDUVERS2", "1.1.0   ", "Obsolete - included for backwards compatibility"),
+    )
+
+    def __init__(self, t_start, t_stop):
+        """
+        :param t_start: start time of gti
+        :param t_stop: stop time of gti
+        """
+
+        data_tuple = (
+            ("START", t_start),
+            ("STOP", t_stop),
+        )
+
+        super(STDGTI, self).__init__(data_tuple, self._HEADER_KEYWORDS)
+
+
+class GTI(FITSFile):
+    """
+    GTI file
+
+    """
+
+    def __init__(
+        self,
+        filename,
+        t_start: np.ndarray,
+        t_stop: np.ndarray,
+    ):
+
+        # Make sure that the provided iterables are of the right type for the FITS format
+        self._filename = filename
+        t_start = np.array(t_start, np.float64)
+        t_stop = np.array(t_stop, np.float64)
+
+        # Create EVENTS extension
+        gti_ext = STDGTI(t_start, t_stop)
+
+        # Set mission, telescope and instrument name
+        gti_ext.hdu.header.set("MISSION", "ADITYA L-1", "Name of mission/satellite")
+        gti_ext.hdu.header.set("TELESCOP", "AL1", "Telescope name")
+        gti_ext.hdu.header.set("INSTRUME", "SoLEXS", "Instrument name")
+
+        # Create FITS file
+        super(GTI, self).__init__(fits_extensions=[gti_ext])
+
+        self.primary_header_update()
+    
+    def primary_header_update(self):
+        _PRIMARY_HEADER_KEYWORDS = (
+            ("MISSION" , 'ADITYA L-1', 'Name of mission/satellite'),
+            ("TELESCOP", 'AL1' , 'Name of mission/satellite'),
+            ("INSTRUME", 'SoLEXS'      , 'Name of Instrument/detector'),
+            ("ORIGIN"  , 'SoLEXSPOC'       , 'Source of FITS file'),
+            ("CREATOR" , 'solexs_pipeline '  , 'Creator of file'),
+            ("FILENAME",  self._filename            , 'Name of file'),
+            ("CONTENT" , 'GOOD TIME INTERVAL' , 'File content'),
+            ("DATE"    ,  datetime.datetime.now().strftime("%Y-%m-%d") , 'Creation Date'),
+
