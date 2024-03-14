@@ -5,7 +5,7 @@
 # @File Name: L0_interm.py
 # @Project: solexs_pipeline
 #
-# @Last Modified time: 2024-03-14 07:56:01 pm
+# @Last Modified time: 2024-03-14 08:34:39 pm
 #####################################################
 
 from .binary_read import read_solexs_binary_data
@@ -58,7 +58,7 @@ class intermediate_directory():
         log.info(f'Data type: {input_file_data_type}')
         
         self.input_file = input_file
-        self.input_filename = os.path.basename(input_file)
+        self.input_filename = os.path.splitext(os.path.basename(input_file))[0]
         #self.make_interm_dir(self.input_filename,output_dir,clobber)
 
         self.solexs_bd = read_solexs_binary_data(input_file, data_type=input_file_data_type)
@@ -75,7 +75,7 @@ class intermediate_directory():
         if output_dir is None:
             output_dir = os.path.curdir
         
-        output_dir = os.path.join(output_dir,f'{self.input_filename}_interm') #TODO remove extention from inputfilename if required
+        output_dir = os.path.join(output_dir,f'{self.input_filename}_interm')
         log.info(f'Making intermediate directory: {output_dir}')
         if os.path.exists(output_dir) and clobber:
             log.warning(f'Intermediate directory already exist. Removing.')
