@@ -5,7 +5,7 @@
 # @File Name: L0_interm.py
 # @Project: solexs_pipeline
 #
-# @Last Modified time: 2024-03-12 04:11:34 pm
+# @Last Modified time: 2024-03-14 09:05:39 am
 #####################################################
 
 from .binary_read import read_solexs_binary_data
@@ -135,12 +135,17 @@ class intermediate_directory():
         idx = np.abs(x - xi[:,None])
         return y[idx.argmin(axis=1)]
 
-    def calc_energy_bins(self,SDD_number):
+    def calc_energy_bins(self,SDD_number,offset_correction=True):
         log.info(f'Calculating energy bins for SDD{SDD_number}')
         gain, offset_data, electronic_sigma, fano = self.load_bcf_caldb(SDD_number=SDD_number)
         sdd_data = getattr(self.solexs_bd,f'SDD{SDD_number}')
         gain_f = gain/sdd_data.hdr_data.gain
-        ele_box_temp_tmp = getattr(self,f'ele_box_temp_SDD{SDD_number}')
+        if offset_correction:
+            ele_box_temp_tmp = getattr(self,f'ele_box_temp_SDD{SDD_number}')
+        else:
+            ele_box_temp_tmp = getattr(self,f'ele_box_temp_SDD{SDD_number}')
+            ele_box_temp_tmp = np.ones(len(ele_box_temp_tmp))*41.5 # Averaging to 41.5 degree celcius
+            
         offset_f = offset_data[0]*ele_box_temp_tmp**2 + \
             offset_data[1]*ele_box_temp_tmp + offset_data[2]
         
@@ -175,7 +180,7 @@ class intermediate_directory():
         counts = sdd_data.spectral_data.spectra.T
         quality = np.zeros(n_SDD)
         exposure = np.ones(n_SDD)
-        energy_bin_mat = self.calc_energy_bins(SDD_number=SDD_number)
+        energy_bin_mat = self.calc_energy_bins(SDD_number=SDD_number,offset_correction=False)
         e_min = energy_bin_mat[:,:,0]
         e_max = energy_bin_mat[:,:,1]
         
