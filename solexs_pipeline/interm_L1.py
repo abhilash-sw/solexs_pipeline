@@ -5,7 +5,7 @@
 # @File Name: interm_L1.py
 # @Project: solexs_pipeline
 #
-# @Last Modified time: 2024-03-15 10:01:05 am
+# @Last Modified time: 2024-03-15 07:28:51 pm
 #####################################################
 
 import numpy as np
@@ -310,8 +310,14 @@ class L1_directory():
         filename_list_comment = ['HK Files used:']
         for hkf in hk_filename_list:
             filename_list_comment.append(hkf)
-        
+                
         gti_file.update_primary_comments(filename_list_comment)
+
+        gti_tstart_str = datetime.datetime.fromtimestamp(gti_start_time[0]).isoformat()
+        gti_tstop_str = datetime.datetime.fromtimestamp(gti_end_time[-1]).isoformat()
+
+        gti_file._hdu_list[0].header['TSTART'] = gti_tstart_str
+        gti_file._hdu_list[0].header['TSTOP'] = gti_tstop_str
 
         return gti_file
         
@@ -347,7 +353,7 @@ class L1_directory():
         l1_gti_filename = os.path.join(sdd_l1_dir,self.output_filename_gti)
         log.info(f'Creating GTI L1 file: {l1_gti_filename}')
         if compress:
-            log.info(f'Gzipping GTI L1 file: {l1_lc_filename}.gz')
+            log.info(f'Gzipping GTI L1 file: {l1_gti_filename}.gz')
             l1_gti_filename = gzip.open(f'{l1_gti_filename}.gz', 'wb')
         l1_gti_file.writeto(l1_gti_filename, checksum='datasum')
         
