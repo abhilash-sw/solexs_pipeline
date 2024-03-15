@@ -5,7 +5,7 @@
 # @File Name: interm_L1.py
 # @Project: solexs_pipeline
 #
-# @Last Modified time: 2024-03-15 09:09:21 am
+# @Last Modified time: 2024-03-15 09:19:55 am
 #####################################################
 
 import numpy as np
@@ -332,6 +332,7 @@ class L1_directory():
         l1_pi_filename = os.path.join(sdd_l1_dir,self.output_filename_pi)#os.path.join(sdd_l1_dir,f'{self.input_filename}_SDD{SDD_number}_L1.pha')
         log.info(f'Creating PI L1 file: {l1_pi_filename}')
         if compress:
+            log.info(f'Gzipping PI L1 file: {l1_pi_filename}.gz')
             l1_pi_filename = gzip.open(f'{l1_pi_filename}.gz', 'wb')
         l1_pi_file.writeto(l1_pi_filename)
         
@@ -339,12 +340,14 @@ class L1_directory():
         l1_lc_filename = os.path.join(sdd_l1_dir,self.output_filename_lc)#os.path.join(sdd_l1_dir,f'{self.input_filename}_SDD{SDD_number}_L1.lc')
         log.info(f'Creating LC L1 file: {l1_lc_filename}')
         if compress:
+            log.info(f'Gzipping LC L1 file: {l1_lc_filename}.gz')
             l1_lc_filename = gzip.open(f'{l1_lc_filename}.gz', 'wb')
         l1_lc_file.writeto(l1_lc_filename)
 
         l1_gti_filename = os.path.join(sdd_l1_dir,self.output_filename_gti)
         log.info(f'Creating GTI L1 file: {l1_gti_filename}')
         if compress:
+            log.info(f'Gzipping GTI L1 file: {l1_lc_filename}.gz')
             l1_gti_filename = gzip.open(f'{l1_gti_filename}.gz', 'wb')
         l1_gti_file.writeto(l1_gti_filename)
         
