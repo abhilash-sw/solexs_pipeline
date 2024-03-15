@@ -5,7 +5,7 @@
 # @File Name: fits_utils.py
 # @Project: solexs_pipeline
 
-# @Last Modified time: 2024-03-14 08:21:53 pm
+# @Last Modified time: 2024-03-15 06:58:40 pm
 #####################################################
 
 from builtins import str
@@ -18,6 +18,7 @@ import six
 from typing import Any, Dict, List, Optional, Union
 from .logging import setup_logger
 import datetime
+from .__init__ import __version__
 
 # From https://heasarc.gsfc.nasa.gov/docs/software/fitsio/c/c_user/node20.html
 # Codes for the data type of binary table columns and/or for the
@@ -257,7 +258,7 @@ class FITSExtension(object):
         # update the header to indicate that the file was created by 3ML
         self._hdu.header.set(
             "CREATOR",
-            "solexs_pipeline",
+            f"solexs_pipeline-{__version__}",
             # "(Abhilash Sarwade, sarwade@ursc.gov.in)",
         )
 
@@ -856,7 +857,7 @@ class PHAII(FITSFile):
             ("TELESCOP", 'AL1' , 'Name of mission/satellite'),
             ("INSTRUME", 'SoLEXS'      , 'Name of Instrument/detector'),
             ("ORIGIN"  , 'SoLEXSPOC'       , 'Source of FITS file'),
-            ("CREATOR" , 'solexs_pipeline '  , 'Creator of file'),
+            ("CREATOR" , f'solexs_pipeline-{__version__}'  , 'Creator of file'),
             ("FILENAME", self._filename            , 'Name of file'),
             ("CONTENT" , 'Type II PHA file' , 'File content'),
             ("DATE", datetime.datetime.now().strftime("%Y-%m-%d"), 'Creation Date'),
@@ -1062,7 +1063,7 @@ class PHAII_INTERM(FITSFile):
             ("TELESCOP", 'AL1' , 'Name of mission/satellite'),
             ("INSTRUME", 'SoLEXS'      , 'Name of Instrument/detector'),
             ("ORIGIN"  , 'SoLEXSPOC'       , 'Source of FITS file'),
-            ("CREATOR" , 'solexs_pipeline '  , 'Creator of file'),
+            ("CREATOR" , f'solexs_pipeline-{__version__}'  , 'Creator of file'),
             ("FILENAME",  self._filename            , 'Name of file'),
             ("CONTENT" , 'Type II PHA file' , 'File content'),
             ("DATE"    ,  datetime.datetime.now().strftime("%Y-%m-%d") , 'Creation Date'),
@@ -1138,7 +1139,7 @@ class HOUSEKEEPING(FITSFile):
             ("TELESCOP", 'AL1' , 'Name of mission/satellite'),
             ("INSTRUME", 'SoLEXS'      , 'Name of Instrument/detector'),
             ("ORIGIN"  , 'SoLEXSPOC'       , 'Source of FITS file'),
-            ("CREATOR" , 'solexs_pipeline '  , 'Creator of file'),
+            ("CREATOR" , f'solexs_pipeline-{__version__}'  , 'Creator of file'),
             ("FILENAME",  self._filename            , 'Name of file'),
             ("CONTENT" , 'Housekeeping Data file' , 'File content'),
             ("DATE"    ,  datetime.datetime.now().strftime("%Y-%m-%d") , 'Creation Date'),
@@ -1321,7 +1322,7 @@ class LC_INTERM(FITSFile):
             ("TELESCOP", 'AL1' , 'Name of mission/satellite'),
             ("INSTRUME", 'SoLEXS'      , 'Name of Instrument/detector'),
             ("ORIGIN"  , 'SoLEXSPOC'       , 'Source of FITS file'),
-            ("CREATOR" , 'solexs_pipeline '  , 'Creator of file'),
+            ("CREATOR" , f'solexs_pipeline-{__version__}'  , 'Creator of file'),
             ("FILENAME",  self._filename            , 'Name of file'),
             ("CONTENT" , 'LIGHT CURVE' , 'File content'),
             ("DATE"    ,  datetime.datetime.now().strftime("%Y-%m-%d") , 'Creation Date'),
@@ -1508,7 +1509,7 @@ class LC(FITSFile):
             ("TELESCOP", 'AL1', 'Name of mission/satellite'),
             ("INSTRUME", 'SoLEXS', 'Name of Instrument/detector'),
             ("ORIGIN", 'SoLEXSPOC', 'Source of FITS file'),
-            ("CREATOR", 'solexs_pipeline ', 'Creator of file'),
+            ("CREATOR", f'solexs_pipeline-{__version__}', 'Creator of file'),
             ("FILENAME",  self._filename, 'Name of file'),
             ("CONTENT", 'LIGHT CURVE', 'File content'),
             ("DATE",  datetime.datetime.now().strftime("%Y-%m-%d"), 'Creation Date'),
@@ -1587,7 +1588,7 @@ class GTI(FITSFile):
             ("TELESCOP", 'AL1' , 'Name of mission/satellite'),
             ("INSTRUME", 'SoLEXS'      , 'Name of Instrument/detector'),
             ("ORIGIN"  , 'SoLEXSPOC'       , 'Source of FITS file'),
-            ("CREATOR" , 'solexs_pipeline '  , 'Creator of file'),
+            ("CREATOR" , f'solexs_pipeline-{__version__}'  , 'Creator of file'),
             ("FILENAME",  self._filename            , 'Name of file'),
             ("CONTENT" , 'GOOD TIME INTERVAL' , 'File content'),
             ("DATE"    ,  datetime.datetime.now().strftime("%Y-%m-%d") , 'Creation Date'),
