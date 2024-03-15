@@ -5,7 +5,7 @@
 # @File Name: interm_L1.py
 # @Project: solexs_pipeline
 #
-# @Last Modified time: 2024-03-14 08:26:20 pm
+# @Last Modified time: 2024-03-15 09:09:21 am
 #####################################################
 
 import numpy as np
@@ -16,6 +16,7 @@ import pkg_resources
 from .fits_utils import PHAII, LC, GTI
 from .logging import setup_logger
 import datetime
+import gzip
 
 """TODO
 1. Define pi energy bins [DONE]
@@ -24,7 +25,7 @@ import datetime
 4. PI files, rebin to ebounds in CPF. [DONE]
 5. Time in PI files should be one entire day in units of seconds from certain epoch. [DONE]
 6. Time in interm PHA files to time in PI files? Let us not fix time array for L1. let the first time value be variable. [DONE]
-7. Add allday_hk file as well.
+7. Add allday_hk file as well. [DONE]
 """
 log = setup_logger(__name__)
 CPF_DIR = pkg_resources.resource_filename(
@@ -321,7 +322,7 @@ class L1_directory():
 
         return l1_pi_file, l1_lc_file, l1_gti_file
     
-    def write_l1_files(self,SDD_number, l1_pi_file, l1_lc_file, l1_gti_file):
+    def write_l1_files(self,SDD_number, l1_pi_file, l1_lc_file, l1_gti_file, compress=False):
         log.info(f'Creating L1 files for SDD{SDD_number}')
         # l1_pi_file, l1_lc_file = self.create_l1_files(SDD_number)
         # l1_pi_file = self.l1_pi_file
@@ -329,13 +330,21 @@ class L1_directory():
         sdd_l1_dir = os.path.join(self.output_dir,f'SDD{SDD_number}')
 
         l1_pi_filename = os.path.join(sdd_l1_dir,self.output_filename_pi)#os.path.join(sdd_l1_dir,f'{self.input_filename}_SDD{SDD_number}_L1.pha')
+        log.info(f'Creating PI L1 file: {l1_pi_filename}')
+        if compress:
+            l1_pi_filename = gzip.open(f'{l1_pi_filename}.gz', 'wb')
         l1_pi_file.writeto(l1_pi_filename)
-        log.info(f'Created PI L1 file: {l1_pi_filename}')
+        
 
         l1_lc_filename = os.path.join(sdd_l1_dir,self.output_filename_lc)#os.path.join(sdd_l1_dir,f'{self.input_filename}_SDD{SDD_number}_L1.lc')
+        log.info(f'Creating LC L1 file: {l1_lc_filename}')
+        if compress:
+            l1_lc_filename = gzip.open(f'{l1_lc_filename}.gz', 'wb')
         l1_lc_file.writeto(l1_lc_filename)
-        log.info(f'Created LC L1 file: {l1_lc_filename}')
 
         l1_gti_filename = os.path.join(sdd_l1_dir,self.output_filename_gti)
+        log.info(f'Creating GTI L1 file: {l1_gti_filename}')
+        if compress:
+            l1_gti_filename = gzip.open(f'{l1_gti_filename}.gz', 'wb')
         l1_gti_file.writeto(l1_gti_filename)
-        log.info(f'Created GTI L1 file: {l1_gti_filename}')
+        

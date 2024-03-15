@@ -13,7 +13,8 @@ log = setup_logger('solexs_pipeline')
 @click.option('-o', '--output_dir', default=None, show_default=True, help='Output Directory')
 @click.option('-dt', '--data_type', default='L0', show_default=True, help='Raw/SP/L0')
 @click.option('-sdd', '--SDD', default='12', show_default=True, help='1/2/12')
-def main(input_file,output_dir,data_type,sdd,args=None):
+@click.option('-c', '--compress', default=False, show_default=True, help='Compress L1 Files')
+def main(input_file,output_dir,data_type,sdd,compress,args=None):
     """Console script for solexs_pipeline."""
     click.echo("SoLEXS pipeline command line interface "
                "solexs_pipeline.cli.main")
@@ -53,20 +54,20 @@ def main(input_file,output_dir,data_type,sdd,args=None):
     if sdd=='12':
         l1_pi_file_sdd1, l1_lc_file_sdd1, l1_gti_file_sdd1 = l1_dir.create_l1_files(SDD_number=1)
         l1_dir.make_l1_dir(output_dir)
-        l1_dir.write_l1_files(1, l1_pi_file_sdd1, l1_lc_file_sdd1, l1_gti_file_sdd1)
+        l1_dir.write_l1_files(1, l1_pi_file_sdd1, l1_lc_file_sdd1, l1_gti_file_sdd1, compress=compress)
 
         l1_pi_file_sdd2, l1_lc_file_sdd2, l1_gti_file_sdd2 = l1_dir.create_l1_files(SDD_number=2)
-        l1_dir.write_l1_files(2, l1_pi_file_sdd2, l1_lc_file_sdd2, l1_gti_file_sdd2)
+        l1_dir.write_l1_files(2, l1_pi_file_sdd2, l1_lc_file_sdd2, l1_gti_file_sdd2, compress=compress)
     
     if sdd=='1':
         l1_pi_file_sdd1, l1_lc_file_sdd1, l1_gti_file_sdd1 = l1_dir.create_l1_files(SDD_number=1)
         l1_dir.make_l1_dir(output_dir)
-        l1_dir.write_l1_files(1, l1_pi_file_sdd1, l1_lc_file_sdd1, l1_gti_file_sdd1)
+        l1_dir.write_l1_files(1, l1_pi_file_sdd1, l1_lc_file_sdd1, l1_gti_file_sdd1, compress=compress)
 
     if sdd=='2':
         l1_pi_file_sdd2, l1_lc_file_sdd2, l1_gti_file_sdd2 = l1_dir.create_l1_files(SDD_number=2)
         l1_dir.make_l1_dir(output_dir)
-        l1_dir.write_l1_files(2, l1_pi_file_sdd2, l1_lc_file_sdd2, l1_gti_file_sdd2)
+        l1_dir.write_l1_files(2, l1_pi_file_sdd2, l1_lc_file_sdd2, l1_gti_file_sdd2, compress=compress)
 
 
     # l1_dir.write_l1_files(SDD_number=1)
