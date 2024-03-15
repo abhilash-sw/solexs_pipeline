@@ -5,7 +5,7 @@
 # @File Name: interm_L1.py
 # @Project: solexs_pipeline
 #
-# @Last Modified time: 2024-03-15 09:19:55 am
+# @Last Modified time: 2024-03-15 10:01:05 am
 #####################################################
 
 import numpy as np
@@ -334,7 +334,7 @@ class L1_directory():
         if compress:
             log.info(f'Gzipping PI L1 file: {l1_pi_filename}.gz')
             l1_pi_filename = gzip.open(f'{l1_pi_filename}.gz', 'wb')
-        l1_pi_file.writeto(l1_pi_filename)
+        l1_pi_file.writeto(l1_pi_filename, checksum='datasum')
         
 
         l1_lc_filename = os.path.join(sdd_l1_dir,self.output_filename_lc)#os.path.join(sdd_l1_dir,f'{self.input_filename}_SDD{SDD_number}_L1.lc')
@@ -342,12 +342,12 @@ class L1_directory():
         if compress:
             log.info(f'Gzipping LC L1 file: {l1_lc_filename}.gz')
             l1_lc_filename = gzip.open(f'{l1_lc_filename}.gz', 'wb')
-        l1_lc_file.writeto(l1_lc_filename)
+        l1_lc_file.writeto(l1_lc_filename, checksum='datasum')
 
         l1_gti_filename = os.path.join(sdd_l1_dir,self.output_filename_gti)
         log.info(f'Creating GTI L1 file: {l1_gti_filename}')
         if compress:
             log.info(f'Gzipping GTI L1 file: {l1_lc_filename}.gz')
             l1_gti_filename = gzip.open(f'{l1_gti_filename}.gz', 'wb')
-        l1_gti_file.writeto(l1_gti_filename)
+        l1_gti_file.writeto(l1_gti_filename, checksum='datasum')
         
