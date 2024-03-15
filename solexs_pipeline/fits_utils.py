@@ -5,7 +5,7 @@
 # @File Name: fits_utils.py
 # @Project: solexs_pipeline
 
-# @Last Modified time: 2024-03-15 06:58:40 pm
+# @Last Modified time: 2024-03-15 07:08:18 pm
 #####################################################
 
 from builtins import str
@@ -18,7 +18,7 @@ import six
 from typing import Any, Dict, List, Optional, Union
 from .logging import setup_logger
 import datetime
-from .__init__ import __version__
+from .__init__ import __version__, __data_version__
 
 # From https://heasarc.gsfc.nasa.gov/docs/software/fitsio/c/c_user/node20.html
 # Codes for the data type of binary table columns and/or for the
@@ -860,6 +860,7 @@ class PHAII(FITSFile):
             ("CREATOR" , f'solexs_pipeline-{__version__}'  , 'Creator of file'),
             ("FILENAME", self._filename            , 'Name of file'),
             ("CONTENT" , 'Type II PHA file' , 'File content'),
+            ("VERSION" , __data_version__ , 'Data Product Version'),
             ("DATE", datetime.datetime.now().strftime("%Y-%m-%d"), 'Creation Date'),
         )
 
@@ -1066,6 +1067,7 @@ class PHAII_INTERM(FITSFile):
             ("CREATOR" , f'solexs_pipeline-{__version__}'  , 'Creator of file'),
             ("FILENAME",  self._filename            , 'Name of file'),
             ("CONTENT" , 'Type II PHA file' , 'File content'),
+            ("VERSION" , __data_version__ , 'Data Product Version'),
             ("DATE"    ,  datetime.datetime.now().strftime("%Y-%m-%d") , 'Creation Date'),
         )
 
@@ -1142,6 +1144,7 @@ class HOUSEKEEPING(FITSFile):
             ("CREATOR" , f'solexs_pipeline-{__version__}'  , 'Creator of file'),
             ("FILENAME",  self._filename            , 'Name of file'),
             ("CONTENT" , 'Housekeeping Data file' , 'File content'),
+            ("VERSION" , __data_version__ , 'Data Product Version'),
             ("DATE"    ,  datetime.datetime.now().strftime("%Y-%m-%d") , 'Creation Date'),
         )
 
@@ -1325,6 +1328,7 @@ class LC_INTERM(FITSFile):
             ("CREATOR" , f'solexs_pipeline-{__version__}'  , 'Creator of file'),
             ("FILENAME",  self._filename            , 'Name of file'),
             ("CONTENT" , 'LIGHT CURVE' , 'File content'),
+            ("VERSION" , __data_version__ , 'Data Product Version'),
             ("DATE"    ,  datetime.datetime.now().strftime("%Y-%m-%d") , 'Creation Date'),
         )
 
@@ -1512,6 +1516,7 @@ class LC(FITSFile):
             ("CREATOR", f'solexs_pipeline-{__version__}', 'Creator of file'),
             ("FILENAME",  self._filename, 'Name of file'),
             ("CONTENT", 'LIGHT CURVE', 'File content'),
+            ("VERSION" , __data_version__ , 'Data Product Version'),
             ("DATE",  datetime.datetime.now().strftime("%Y-%m-%d"), 'Creation Date'),
         )
 
@@ -1591,6 +1596,7 @@ class GTI(FITSFile):
             ("CREATOR" , f'solexs_pipeline-{__version__}'  , 'Creator of file'),
             ("FILENAME",  self._filename            , 'Name of file'),
             ("CONTENT" , 'GOOD TIME INTERVAL' , 'File content'),
+            ("VERSION" , __data_version__ , 'Data Product Version'),
             ("DATE"    ,  datetime.datetime.now().strftime("%Y-%m-%d") , 'Creation Date'),
         )
 
