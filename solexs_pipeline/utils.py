@@ -5,7 +5,7 @@
 # @File Name: utils.py
 # @Project: solexs_pipeline
 #
-# @Last Modified time: 2024-02-02 08:46:12 am
+# @Last Modified time: 2024-03-19 03:26:17 pm
 #####################################################
 
 import numpy as np
@@ -164,21 +164,23 @@ def make_start_stop_time_db(solexs_data_dir):
             if tmp_data[-1][:-1] == dt:
                 tmp_datewise_files.append(tmp_data[0])
         datewise_files_dict[dt] = tmp_datewise_files
+    
+    return datewise_files_dict
 
 
-def run_pipeline(pld_files_list,output_dir,sdd='12'):
+def run_pipeline(pld_files_list,output_dir,sdd='12',compress=False):
     cmd = 'solexs_pipeline'
     for pld_file in pld_files_list:
         cmd = cmd + f' -i {pld_file}'
     
-    cmd = cmd + f' -o {output_dir} -dt L0 -sdd {sdd}'
+    cmd = cmd + f' -o {output_dir} -dt L0 -sdd {sdd} -c {compress}'
     os.system(cmd)
 
-def run_pipeline_batch(datewise_files_dict,output_dir,sdd='12'):
+def run_pipeline_batch(datewise_files_dict,output_dir,sdd='12',compress=False):
     for dt in datewise_files_dict.keys():
         if os.path.isdir(f'AL1_SOLEXS_{dt}'):
             continue
-        run_pipeline(datewise_files_dict[dt],output_dir,sdd)
+        run_pipeline(datewise_files_dict[dt],output_dir,sdd,compress)
 
 # def make_datewise_files_db(solexs_data_dir):
 #     fid = open(os.path.join(solexs_data_dir,'files_start_stop_times.txt'),'r')
@@ -189,120 +191,3 @@ def run_pipeline_batch(datewise_files_dict,output_dir,sdd='12'):
 
 #     for i in range(len(start_stop_data)):
 
-def convert_pi_340_to_512(pi_file,rsp_file):
-    hdus_pi = fits.open(pi_file)
-
-    hdus_rsp = fits.open(rsp_file)
-    rsp_ene_min = hdus_rsp[1].data['E_MIN']
-    rsp_ene_max = hdus_rsp[1].data['E_MAX']
-
-
-    ch = hdus_pi[1].data['CHANNEL'][0]
-
-    ###
-    pi_ene_min = np.zeros(len(ch))
-    pi_ene_min[:169] = rsp_ene_min[:169] # Correct (double checked)
-
-    j = 170
-    for i in range(169,340):
-        pi_ene_min[i] = rsp_ene_min[j]
-        j = j+2
-    
-    pi_ene_max = np.zeros(len(ch))
-    pi_ene_max[:168] = rsp_ene_max[:168]
-
-    j = 169
-    for i in range(168,340):
-        pi_ene_max[i] = rsp_ene_max[j]
-        j = j+2
-    
-    counts = hdus_pi[1].data['COUNTS']
-
-    nbins_pi = counts.shape[0]
-    counts_512 = np.zeros((nbins_pi,512))
-
-    for i in range(nbins_pi):
-        count = counts[i]
-        count[168:] = count[168:]/2
-        counts_512[i] = np.interp(rsp_ene_min,pi_ene_min,count)
-
-
-    
-
-    filename = hdus_pi[0].header['FILENAME'].split('.')[0] + '_512.pi'
-    all_time = hdus_pi[1].data['TSTART']
-    telapse = hdus_pi[1].data['TELAPSE']
-    ch = np.arange(512)
-    channel = np.tile(ch, (nbins_pi, 1))
-    exposure = hdus_pi[1].data['EXPOSURE']
-    respfile = hdus_pi[1].data['RESPFILE']
-
-    pi_file_512 = PHAII(filename, all_time, telapse, channel, counts_512, exposure, respfile)
-    pi_file_512.writeto(filename)
-
-
-def solexs_genspec(pi_file_512,tstart,tstop,outfile): # times in seconds since 2017,1,1
-    spec_file = pi_file_512
-    hdu1 = fits.open(spec_file)
-    hdu=fits.BinTableHDU.from_columns(hdu1[1].columns)
-
-    data=hdu.data
-
-    time_solexs = data['TSTART']
-    # tbinsize=(data['TSTOP'][0]-data['TSTART'][0])
-    
-    exposure=data['EXPOSURE']
-
-    inds = (time_solexs >= tstart) & (time_solexs < tstop)
-
-    data_f = data[inds]
-
-    channel = data_f[0][3]
-    n_ch = len(channel)
-    spec_data = np.zeros(n_ch)
-    stat_err = np.zeros(n_ch)
-    sys_err = np.zeros(n_ch)
-    exposure = 0
-
-    for di in data_f:
-        spec_data = spec_data + di[4]
-        # stat_err = stat_err + np.sqrt(di[4])
-        # sys_err = sys_err
-        exposure = exposure + di[5]
-
-    stat_err = np.sqrt(spec_data)
-    
-    # writing file
-    hdu_list = []
-    primary_hdu = fits.PrimaryHDU()
-                                    
-    hdu_list.append(primary_hdu)
-
-    fits_columns = []
-    col1 = fits.Column(name='CHANNEL',format='J',array=channel)
-    col2 = fits.Column(name='COUNTS',format='E',array=spec_data)
-    col3 = fits.Column(name='STAT_ERR',format='E',array=stat_err)
-    col4 = fits.Column(name='SYS_ERR',format='E',array=sys_err)
-
-    fits_columns.append(col1)
-    fits_columns.append(col2)
-    fits_columns.append(col3)
-    fits_columns.append(col4)
-
-    hdu_pha = fits.BinTableHDU.from_columns(fits.ColDefs(fits_columns))
-    hdu_pha.name = 'SPECTRUM'
-                                                                       
-    hdu_list.append(hdu_pha)
-                                                                       
-    _hdu_list = fits.HDUList(hdus=hdu_list)
-
-    tstart_dt = datetime.datetime.fromtimestamp(tstart)
-    tstop_dt = datetime.datetime.fromtimestamp(tstop)
-
-    _hdu_list[1].header.set('TSTART',tstart_dt.isoformat())
-    _hdu_list[1].header.set('TSTOP',tstop_dt.isoformat())
-    _hdu_list[1].header.set('EXPOSURE',f'{exposure:.2f}')
-
-    _hdu_list[0].header.set('TELESCOP','AL1')
-    _hdu_list[0].header.set('INSTRUME','SoLEXS')
-    _hdu_list.writeto(f'{outfile}.pha')
